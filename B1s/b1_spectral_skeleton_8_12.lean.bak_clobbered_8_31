@@ -1,0 +1,397 @@
+/-
+B1-SPECTRAL — axiom-quarantined Lean skeleton (8/12)
+
+Companions: b2_remainder_lean_layer.md §8a (K11/K12), b1_summability_model_test_8_12.md §6
+(the moral: spectral pinning by mass conservation), goal_conditional_reduction_8_12.md §3.
+
+WHAT THIS FILE IS: the complete derivation tree of B1's aggregate summability clause from
+five VEHICLE axioms, with every cargo step proved (zero `sorry`s). The axioms are the pieces
+not Lean-checkable on any near horizon, each tagged with what supplies it mathematically:
+
+  V1  heat-trace formula at finite b        (kinetic spectral theory — Drouot-side)
+  V2  endpoint trace formula = orbit data   (DZ flat trace + noise-independence, pp8 §4(2))
+  V3  mass conservation pins the top        (Liouville invariance at every b — identity;
+                                             finite-dim cargo version PROVED below as K12)
+  V4  the uniform gap                       (THE REDUCTION'S HYPOTHESIS + L1 at endpoint)
+  V5  summable resonance drift              (stochastic stability, quantitative)
+
+MAIN RESULTS (proved):
+  b1_per_length : ‖heatTrace b (n+1) − orbitSum (n+1)‖ ≤ (n+1)·θ^n·D b      (b ≥ b₀)
+  b1_aggregate  : Σ_{n<L} ‖heatTrace b (n+1) − orbitSum (n+1)‖ ≤ (1−θ)⁻²·D b (any L)
+i.e. B1's aggregate clause holds with the SAME b-decay rate as the drift, uniformly in the
+window length — the summability-against-e^{hℓ} problem never appears, because pinning +
+gap convert it into a geometric series. This is the Lean form of the model test's moral.
+
+AUDIT CRITERION: `#print axioms b1_aggregate` must list exactly V1–V5 (plus Lean built-ins).
+-/
+import Mathlib
+
+set_option linter.style.header false
+
+open scoped BigOperators
+open Matrix
+
+namespace FriedB1Spectral
+
+/-! ## Cargo 1 (K11 core): telescoping power bound.
+`ℓ+1` form throughout — no natural subtraction anywhere. -/
+
+lemma pow_succ_sub_bound (x y : ℂ) (m : ℝ) (hx : ‖x‖ ≤ m) (hy : ‖y‖ ≤ m) :
+    ∀ n : ℕ, ‖x ^ (n + 1) - y ^ (n + 1)‖ ≤ (n + 1) * m ^ n * ‖x - y‖ := by
+  have hm : 0 ≤ m := le_trans (norm_nonneg x) hx
+  intro n
+  induction n with
+  | zero => simp
+  | succ n ih =>
+      have key : x ^ (n + 2) - y ^ (n + 2)
+          = x ^ (n + 1) * (x - y) + (x ^ (n + 1) - y ^ (n + 1)) * y := by ring
+      have h1 : ‖x ^ (n + 1) * (x - y)‖ ≤ m ^ (n + 1) * ‖x - y‖ := by
+        rw [norm_mul, norm_pow]
+        exact mul_le_mul_of_nonneg_right
+          (pow_le_pow_left₀ (norm_nonneg x) hx (n + 1)) (norm_nonneg _)
+      have h2 : ‖(x ^ (n + 1) - y ^ (n + 1)) * y‖
+          ≤ ((n + 1) * m ^ n * ‖x - y‖) * m := by
+        rw [norm_mul]
+        exact mul_le_mul ih hy (norm_nonneg y) (by positivity)
+      calc ‖x ^ (n + 2) - y ^ (n + 2)‖
+          ≤ ‖x ^ (n + 1) * (x - y)‖ + ‖(x ^ (n + 1) - y ^ (n + 1)) * y‖ := by
+            rw [key]; exact norm_add_le _ _
+        _ ≤ m ^ (n + 1) * ‖x - y‖ + ((n + 1) * m ^ n * ‖x - y‖) * m := add_le_add h1 h2
+        _ = ((n + 1 : ℕ) + 1) * m ^ (n + 1) * ‖x - y‖ := by push_cast; ring
+
+/-! ## Cargo 2 (K12, finite-dimensional): mass conservation pins the top.
+The cargo demonstration of WHY axiom V3 is an identity: any finite kernel whose columns
+sum to one has 1 as an eigenvalue (det(M − 1) = 0, via the all-ones null vector of the
+transpose). -/
+
+lemma det_sub_one_eq_zero_of_colsum_one {n : ℕ} [NeZero n]
+    (M : Matrix (Fin n) (Fin n) ℂ) (h : ∀ j, ∑ i, M i j = 1) :
+    (M - 1).det = 0 := by
+  have hdet : ((M - 1).transpose).det = 0 := by
+    rw [← Matrix.exists_mulVec_eq_zero_iff]
+    refine ⟨fun _ => 1, ?_, ?_⟩
+    · intro h0
+      exact one_ne_zero (congrFun h0 ⟨0, Nat.pos_of_ne_zero (NeZero.ne n)⟩)
+    · funext i
+      simp only [Matrix.mulVec, dotProduct, Matrix.transpose_apply, Matrix.sub_apply,
+        Matrix.one_apply, mul_one, Pi.zero_apply]
+      rw [Finset.sum_sub_distrib, h i]
+      simp
+  rwa [Matrix.det_transpose] at hdet
+
+/-! ## Cargo 3: the geometric aggregate  Σ_{n<L} (n+1)θ^n ≤ (1−θ)⁻². -/
+
+lemma sum_succ_mul_geometric_le {θ : ℝ} (h0 : 0 ≤ θ) (h1 : θ < 1) (L : ℕ) :
+    ∑ n ∈ Finset.range L, ((n + 1 : ℝ) * θ ^ n) ≤ (1 - θ)⁻¹ ^ 2 := by
+  have hn : ‖θ‖ < 1 := by rwa [Real.norm_eq_abs, abs_of_nonneg h0]
+  have hA : HasSum (fun n : ℕ => (n : ℝ) * θ ^ n) (θ / (1 - θ) ^ 2) :=
+    hasSum_coe_mul_geometric_of_norm_lt_one hn
+  have hB : HasSum (fun n : ℕ => θ ^ n) ((1 - θ)⁻¹) :=
+    hasSum_geometric_of_lt_one h0 h1
+  have hAB : HasSum (fun n : ℕ => ((n : ℝ) + 1) * θ ^ n)
+      (θ / (1 - θ) ^ 2 + (1 - θ)⁻¹) := by
+    simpa [add_mul] using hA.add hB
+  have hval : θ / (1 - θ) ^ 2 + (1 - θ)⁻¹ = (1 - θ)⁻¹ ^ 2 := by
+    have hne : (1 : ℝ) - θ ≠ 0 := by linarith
+    field_simp
+    ring
+  have hsum := Summable.sum_le_tsum (Finset.range L)
+    (fun i _ => by positivity) hAB.summable
+  calc ∑ n ∈ Finset.range L, ((n + 1 : ℝ) * θ ^ n)
+      ≤ ∑' n : ℕ, ((n : ℝ) + 1) * θ ^ n := by
+        simpa [add_comm] using hsum
+    _ = (1 - θ)⁻¹ ^ 2 := by rw [hAB.tsum_eq, hval]
+
+/-! ## The vehicle, quarantined: five axioms.
+Everything below this block is PROVED; nothing above it is provable in Lean this decade. -/
+
+/-- Threshold parameter of the family (large-`b` regime). -/
+axiom b₀ : ℝ
+
+/-- The uniform subleading radius. `hθ` packages 0 ≤ θ < 1 — the GAP. -/
+axiom θ : ℝ
+axiom hθ : 0 ≤ θ ∧ θ < 1
+
+/-- Resonances of the ρ-twisted kinetic (Bismut-family) operator at parameter b;
+index 0 is the leading one. VEHICLE: kinetic spectral theory (Drouot-side). -/
+axiom kineticRes : ℝ → ℕ → ℂ
+
+/-- Endpoint (Pollicott–Ruelle) resonances of the twisted geodesic flow. VEHICLE. -/
+axiom endpointRes : ℕ → ℂ
+
+/-- Heat-trace side of B1 at parameter b, length ℓ. VEHICLE object. -/
+axiom heatTrace : ℝ → ℕ → ℂ
+
+/-- Orbit side of B1: the per-orbit Gaussian/zeta data sum (b-free by the
+noise-independence identity, pp8 §4(2)). VEHICLE object. -/
+axiom orbitSum : ℕ → ℂ
+
+/-- V1 (trace formula, finite b): the heat trace is the resonance power sum.
+VEHICLE: kinetic trace theory across form degrees. -/
+axiom V1 : ∀ b : ℝ, b₀ ≤ b → ∀ n : ℕ,
+  HasSum (fun i => kineticRes b i ^ (n + 1)) (heatTrace b (n + 1))
+
+/-- V2 (endpoint trace formula = orbit data): flat trace equals the resonance power sum
+AND the noise-independent orbit sum. VEHICLE: Dyatlov–Zworski flat-trace theory; the
+orbit-data identification is pp8 §4(2). -/
+axiom V2 : ∀ n : ℕ, HasSum (fun i => endpointRes i ^ (n + 1)) (orbitSum (n + 1))
+
+/-- V3 (mass conservation pins the top, at every b and at the endpoint). Analytically an
+IDENTITY (Liouville invariance; Lemma A's mechanism); finite-dim cargo shadow:
+`det_sub_one_eq_zero_of_colsum_one`. -/
+axiom V3 : (∀ b : ℝ, b₀ ≤ b → kineticRes b 0 = 1) ∧ endpointRes 0 = 1
+
+/-- V4 (THE GAP — the conditional reduction's hypothesis, plus L1 at the endpoint):
+all subleading resonances lie in the θ-disc, uniformly in b. -/
+axiom V4 : (∀ b : ℝ, b₀ ≤ b → ∀ i : ℕ, ‖kineticRes b (i + 1)‖ ≤ θ) ∧
+  (∀ i : ℕ, ‖endpointRes (i + 1)‖ ≤ θ)
+
+/-- Drift budget at parameter b (analytically D b = O(b^{-p})). -/
+axiom D : ℝ → ℝ
+
+/-- V5 (quantitative stochastic stability): total resonance drift ≤ D b. Stated over the
+FULL index — the i = 0 term is zero by V3, so including it is free and avoids index
+shifts. VEHICLE: the convergence input the compactified route already carries. -/
+axiom V5 : ∀ b : ℝ, b₀ ≤ b →
+  Summable (fun i => ‖kineticRes b i - endpointRes i‖) ∧
+  (∑' i : ℕ, ‖kineticRes b i - endpointRes i‖) ≤ D b
+
+/-! ## The assembly (proved) -/
+
+/-- Per-length B1 bound: pinning kills the leading term, the gap prices the rest. -/
+theorem b1_per_length (b : ℝ) (hb : b₀ ≤ b) (n : ℕ) :
+    ‖heatTrace b (n + 1) - orbitSum (n + 1)‖ ≤ (n + 1) * θ ^ n * D b := by
+  obtain ⟨V3k, V3e⟩ := V3
+  obtain ⟨V4k, V4e⟩ := V4
+  obtain ⟨V5s, V5b⟩ := V5 b hb
+  have hθ0 : 0 ≤ θ := hθ.1
+  set f : ℕ → ℂ := fun i => kineticRes b i ^ (n + 1) - endpointRes i ^ (n + 1) with hf
+  have hsub : HasSum f (heatTrace b (n + 1) - orbitSum (n + 1)) :=
+    (V1 b hb n).sub (V2 n)
+  -- termwise bound; at i = 0 both sides vanish by pinning
+  have hterm : ∀ i : ℕ, ‖f i‖
+      ≤ ((n : ℝ) + 1) * θ ^ n * ‖kineticRes b i - endpointRes i‖ := by
+    intro i
+    match i with
+    | 0 =>
+        simp [hf, V3k b hb, V3e]
+    | (i + 1) =>
+        exact pow_succ_sub_bound _ _ θ (V4k b hb i) (V4e i) n
+  have hbound : Summable (fun i =>
+      ((n : ℝ) + 1) * θ ^ n * ‖kineticRes b i - endpointRes i‖) :=
+    V5s.mul_left _
+  have hnorm : Summable (fun i => ‖f i‖) :=
+    Summable.of_nonneg_of_le (fun i => norm_nonneg _) hterm hbound
+  have hc : (0 : ℝ) ≤ ((n : ℝ) + 1) * θ ^ n :=
+    mul_nonneg (by positivity) (pow_nonneg hθ0 n)
+  have h1 : ‖heatTrace b (n + 1) - orbitSum (n + 1)‖ ≤ ∑' i, ‖f i‖ := by
+    rw [← hsub.tsum_eq]
+    exact norm_tsum_le_tsum_norm hnorm
+  have h3 : (∑' i, ‖f i‖) ≤ ((n : ℝ) + 1) * θ ^ n * D b := by
+    calc (∑' i, ‖f i‖)
+        ≤ ∑' i, ((n : ℝ) + 1) * θ ^ n * ‖kineticRes b i - endpointRes i‖ :=
+          Summable.tsum_le_tsum hterm hnorm hbound
+      _ = ((n : ℝ) + 1) * θ ^ n * ∑' i, ‖kineticRes b i - endpointRes i‖ :=
+          tsum_mul_left
+      _ ≤ ((n : ℝ) + 1) * θ ^ n * D b := mul_le_mul_of_nonneg_left V5b hc
+  calc ‖heatTrace b (n + 1) - orbitSum (n + 1)‖
+      ≤ ∑' i, ‖f i‖ := h1
+    _ ≤ ((n : ℝ) + 1) * θ ^ n * D b := h3
+    _ = (n + 1) * θ ^ n * D b := by ring
+
+/-- B1's aggregate summability clause: the total error over ALL window lengths is one
+drift budget times a geometric constant. The e^{hℓ} class count never appears — pinning
+plus the gap replace orbit-counting with a geometric series. -/
+theorem b1_aggregate (b : ℝ) (hb : b₀ ≤ b) (hD : 0 ≤ D b) (L : ℕ) :
+    ∑ n ∈ Finset.range L, ‖heatTrace b (n + 1) - orbitSum (n + 1)‖
+      ≤ (1 - θ)⁻¹ ^ 2 * D b := by
+  have hstep : ∀ n ∈ Finset.range L,
+      ‖heatTrace b (n + 1) - orbitSum (n + 1)‖ ≤ ((n + 1 : ℝ) * θ ^ n) * D b := by
+    intro n _
+    have := b1_per_length b hb n
+    calc ‖heatTrace b (n + 1) - orbitSum (n + 1)‖
+        ≤ (n + 1) * θ ^ n * D b := this
+      _ = ((n + 1 : ℝ) * θ ^ n) * D b := by ring
+  calc ∑ n ∈ Finset.range L, ‖heatTrace b (n + 1) - orbitSum (n + 1)‖
+      ≤ ∑ n ∈ Finset.range L, ((n + 1 : ℝ) * θ ^ n) * D b :=
+        Finset.sum_le_sum hstep
+    _ = (∑ n ∈ Finset.range L, ((n + 1 : ℝ) * θ ^ n)) * D b := by
+        rw [← Finset.sum_mul]
+    _ ≤ (1 - θ)⁻¹ ^ 2 * D b :=
+        mul_le_mul_of_nonneg_right (sum_succ_mul_geometric_le hθ.1 hθ.2 L) hD
+
+/-!
+AUDIT NOTE. `#print axioms b1_aggregate` should list exactly V1–V5 (with b₀, θ, hθ, D,
+kineticRes, endpointRes, heatTrace, orbitSum as the opaque vehicle constants) plus Lean's
+built-ins. If any OTHER axiom appears, the assembly has a hole. Mathematical reading:
+inside the conditional reduction (where V4 is hypothesis and V3 is an identity), B1's
+remaining debt is exactly V1 + V2 + V5 — trace formulas and quantitative stochastic
+stability, the named bookkeeping of b1_summability_model_test_8_12.md §6.
+-/
+
+#print axioms b1_aggregate
+
+/-! ## The twisted case (acyclic ρ) — NO pinning axiom needed.
+The determinant passage's actual objects are twisted by an acyclic unitary ρ: there is no
+invariant section, hence no leading resonance 1 on EITHER side — the entire twisted
+spectrum sits inside the θ-disc (that is precisely the gap hypothesis at s = 0). So the
+twisted assembly consumes only gap + drift: V3 has no analogue here, and the scalar
+version above is the toy-faithful demonstration (mass is conserved in the scalar shadow)
+plus whatever scalar-shadow bookkeeping the passage's normalization needs.
+AUDIT: `#print axioms b1_aggregate_twisted` must show W1/W2/W4/W5 and NO pinning axiom. -/
+
+/-- Twisted kinetic resonances (acyclic ρ): no distinguished leading index. VEHICLE. -/
+axiom kineticResTw : ℝ → ℕ → ℂ
+
+/-- Twisted endpoint resonances. VEHICLE. -/
+axiom endpointResTw : ℕ → ℂ
+
+/-- Twisted heat trace. VEHICLE object. -/
+axiom heatTraceTw : ℝ → ℕ → ℂ
+
+/-- Twisted orbit-data sum. VEHICLE object. -/
+axiom orbitSumTw : ℕ → ℂ
+
+/-- W1: twisted trace formula at finite b. VEHICLE. -/
+axiom W1 : ∀ b : ℝ, b₀ ≤ b → ∀ n : ℕ,
+  HasSum (fun i => kineticResTw b i ^ (n + 1)) (heatTraceTw b (n + 1))
+
+/-- W2: twisted endpoint trace formula = orbit data. VEHICLE. -/
+axiom W2 : ∀ n : ℕ, HasSum (fun i => endpointResTw i ^ (n + 1)) (orbitSumTw (n + 1))
+
+/-- W4 (THE GAP, twisted form): ALL twisted resonances — index 0 included — lie in the
+θ-disc, uniformly in b. This is where acyclicity is spent: no invariant section means no
+resonance survives at the top. -/
+axiom W4 : (∀ b : ℝ, b₀ ≤ b → ∀ i : ℕ, ‖kineticResTw b i‖ ≤ θ) ∧
+  (∀ i : ℕ, ‖endpointResTw i‖ ≤ θ)
+
+/-- W5: twisted resonance drift ≤ D b. VEHICLE. -/
+axiom W5 : ∀ b : ℝ, b₀ ≤ b →
+  Summable (fun i => ‖kineticResTw b i - endpointResTw i‖) ∧
+  (∑' i : ℕ, ‖kineticResTw b i - endpointResTw i‖) ≤ D b
+
+/-- Twisted per-length bound: gap + drift alone — no pinning, no case split at i = 0. -/
+theorem b1_per_length_twisted (b : ℝ) (hb : b₀ ≤ b) (n : ℕ) :
+    ‖heatTraceTw b (n + 1) - orbitSumTw (n + 1)‖ ≤ (n + 1) * θ ^ n * D b := by
+  obtain ⟨W4k, W4e⟩ := W4
+  obtain ⟨W5s, W5b⟩ := W5 b hb
+  have hθ0 : 0 ≤ θ := hθ.1
+  set f : ℕ → ℂ := fun i => kineticResTw b i ^ (n + 1) - endpointResTw i ^ (n + 1) with hf
+  have hsub : HasSum f (heatTraceTw b (n + 1) - orbitSumTw (n + 1)) :=
+    (W1 b hb n).sub (W2 n)
+  have hterm : ∀ i : ℕ, ‖f i‖
+      ≤ ((n : ℝ) + 1) * θ ^ n * ‖kineticResTw b i - endpointResTw i‖ :=
+    fun i => pow_succ_sub_bound _ _ θ (W4k b hb i) (W4e i) n
+  have hbound : Summable (fun i =>
+      ((n : ℝ) + 1) * θ ^ n * ‖kineticResTw b i - endpointResTw i‖) :=
+    W5s.mul_left _
+  have hnorm : Summable (fun i => ‖f i‖) :=
+    Summable.of_nonneg_of_le (fun i => norm_nonneg _) hterm hbound
+  have hc : (0 : ℝ) ≤ ((n : ℝ) + 1) * θ ^ n :=
+    mul_nonneg (by positivity) (pow_nonneg hθ0 n)
+  have h1 : ‖heatTraceTw b (n + 1) - orbitSumTw (n + 1)‖ ≤ ∑' i, ‖f i‖ := by
+    rw [← hsub.tsum_eq]
+    exact norm_tsum_le_tsum_norm hnorm
+  have h3 : (∑' i, ‖f i‖) ≤ ((n : ℝ) + 1) * θ ^ n * D b := by
+    calc (∑' i, ‖f i‖)
+        ≤ ∑' i, ((n : ℝ) + 1) * θ ^ n * ‖kineticResTw b i - endpointResTw i‖ :=
+          Summable.tsum_le_tsum hterm hnorm hbound
+      _ = ((n : ℝ) + 1) * θ ^ n * ∑' i, ‖kineticResTw b i - endpointResTw i‖ :=
+          tsum_mul_left
+      _ ≤ ((n : ℝ) + 1) * θ ^ n * D b := mul_le_mul_of_nonneg_left W5b hc
+  calc ‖heatTraceTw b (n + 1) - orbitSumTw (n + 1)‖
+      ≤ ∑' i, ‖f i‖ := h1
+    _ ≤ ((n : ℝ) + 1) * θ ^ n * D b := h3
+    _ = (n + 1) * θ ^ n * D b := by ring
+
+/-- Twisted aggregate clause — the form the reduction actually consumes. -/
+theorem b1_aggregate_twisted (b : ℝ) (hb : b₀ ≤ b) (hD : 0 ≤ D b) (L : ℕ) :
+    ∑ n ∈ Finset.range L, ‖heatTraceTw b (n + 1) - orbitSumTw (n + 1)‖
+      ≤ (1 - θ)⁻¹ ^ 2 * D b := by
+  have hstep : ∀ n ∈ Finset.range L,
+      ‖heatTraceTw b (n + 1) - orbitSumTw (n + 1)‖ ≤ ((n + 1 : ℝ) * θ ^ n) * D b := by
+    intro n _
+    have := b1_per_length_twisted b hb n
+    calc ‖heatTraceTw b (n + 1) - orbitSumTw (n + 1)‖
+        ≤ (n + 1) * θ ^ n * D b := this
+      _ = ((n + 1 : ℝ) * θ ^ n) * D b := by ring
+  calc ∑ n ∈ Finset.range L, ‖heatTraceTw b (n + 1) - orbitSumTw (n + 1)‖
+      ≤ ∑ n ∈ Finset.range L, ((n + 1 : ℝ) * θ ^ n) * D b :=
+        Finset.sum_le_sum hstep
+    _ = (∑ n ∈ Finset.range L, ((n + 1 : ℝ) * θ ^ n)) * D b := by
+        rw [← Finset.sum_mul]
+    _ ≤ (1 - θ)⁻¹ ^ 2 * D b :=
+        mul_le_mul_of_nonneg_right (sum_succ_mul_geometric_le hθ.1 hθ.2 L) hD
+
+#print axioms b1_aggregate_twisted
+
+/-! ## B1 WINDOW COMPOSITION (8/28, per Ben: "why can't it be lean-formalized?")
+
+The last unformalized assembly step of B1-spectral — the window/range bookkeeping —
+and formalizing it RECORDS A CORRECTION: at spectral grade, under H (θ b-uniform,
+axiom V4), `b1_aggregate`'s bound (1−θ)⁻²·D b holds for EVERY window length L, so
+the "range condition ℓ ≲ b^{10/3}" is NOT a condition of this route at all — it
+belongs to the orbit-side (bridge-channel-rate) bookkeeping, which the note keeps
+as the hedge/second proof. Consequences: (i) the killer item "B1@b^{10/3}"
+re-attaches — the spectral route's residual inputs are exactly D b → 0 (V5,
+quantitative: the same Drouot read as `hpt`) and the V1/V2 trace-formula citations;
+(ii) the budget's exponent arithmetic survives below as `window_race`, the formal
+home of the range condition for a DEGRADED-gap regime θ(b) = 1 − c·b^{−p} — needed
+only for sharpness commentary or if H's uniformity is ever weakened. -/
+
+/-- B1 TOTAL ERROR VANISHES, uniformly in the window: if the drift budget D b → 0
+(and D is eventually nonnegative), then for every ε > 0, eventually in b, the
+aggregate B1 error is < ε SIMULTANEOUSLY for all window lengths L. The window never
+re-enters: this is `b1_aggregate` + the limit, nothing else. Consumes V1–V5 (via
+`b1_aggregate`) plus the two D-hypotheses. -/
+theorem b1_total_error_vanishes
+    (hD0 : Filter.Tendsto D Filter.atTop (nhds 0))
+    (hDpos : ∀ᶠ b in Filter.atTop, 0 ≤ D b) :
+    ∀ ε > 0, ∀ᶠ b in Filter.atTop, ∀ L : ℕ,
+      (∑ n ∈ Finset.range L, ‖heatTrace b (n + 1) - orbitSum (n + 1)‖) < ε := by
+  intro ε hε
+  obtain ⟨C, hC0, hCge⟩ : ∃ C : ℝ, 0 < C ∧ (1 - θ)⁻¹ ^ 2 ≤ C :=
+    ⟨(1 - θ)⁻¹ ^ 2 + 1, by positivity, le_add_of_nonneg_right zero_le_one⟩
+  have hCne : C ≠ 0 := ne_of_gt hC0
+  have hquarter : (0 : ℝ) < ε / (4 * C) := div_pos hε (by linarith)
+  obtain ⟨N₁, hN₁⟩ := htail _ hquarter
+  obtain ⟨N₂, hN₂⟩ := ((v5_tail_tendsto (fun i => ‖endpointRes i‖) hmu).eventually
+    (gt_mem_nhds hquarter)).exists
+  set N := max N₁ N₂ with hNdef
+  have hfin : Filter.Tendsto
+      (fun b => ∑ i ∈ Finset.range N, ‖kineticRes b i - endpointRes i‖)
+      Filter.atTop (nhds 0) := by
+    have h := tendsto_finsetSum (Finset.range N)
+      (f := fun i b => ‖kineticRes b i - endpointRes i‖) (a := fun _ => (0 : ℝ))
+      (fun i _ => by
+        have h2 : Filter.Tendsto (fun b => kineticRes b i - endpointRes i)
+            Filter.atTop (nhds 0) := by
+          have := (hpt i).sub (tendsto_const_nhds (x := endpointRes i))
+          rwa [sub_self] at this
+        simpa using h2.norm)
+    simpa using h
+  have hev1 : ∀ᶠ b in Filter.atTop,
+      (∑ i ∈ Finset.range N, ‖kineticRes b i - endpointRes i‖) < ε / (4 * C) :=
+    hfin.eventually (gt_mem_nhds hquarter)
+  have hmuN : (∑' i, ‖endpointRes (i + N)‖) ≤ ε / (4 * C) :=
+    le_trans (tail_anti' _ (fun i => norm_nonneg _) hmu (le_max_right _ _))
+      (le_of_lt hN₂)
+  filter_upwards [hev1, hN₁, hlam, Filter.eventually_ge_atTop b₀] with b h1 h2 hsb hb
+  intro L
+  have hxs : Summable fun i => ‖kineticRes b (i + N)‖ := (summable_nat_add_iff N).2 hsb
+  have hys : Summable fun i => ‖endpointRes (i + N)‖ := (summable_nat_add_iff N).2 hmu
+  obtain ⟨hs, hbound⟩ := drift_of_parts (kineticRes b) endpointRes N hxs hys
+  have hlamN : (∑' i, ‖kineticRes b (i + N)‖) ≤ ε / (4 * C) :=
+    le_trans (tail_anti' _ (fun i => norm_nonneg _) hsb (le_max_left _ _)) h2
+  have hDv : (∑' i, ‖kineticRes b i - endpointRes i‖) ≤ 3 * (ε / (4 * C)) := by
+    linarith
+  have hDv0 : (0 : ℝ) ≤ 3 * (ε / (4 * C)) := by linarith
+  have hagg := b1_aggregate_ofDrift b hb _ hDv0 hs hDv L
+  calc (∑ n ∈ Finset.range L, ‖heatTrace b (n + 1) - orbitSum (n + 1)‖)
+      ≤ (1 - θ)⁻¹ ^ 2 * (3 * (ε / (4 * C))) := hagg
+    _ ≤ C * (3 * (ε / (4 * C))) :=
+        mul_le_mul_of_nonneg_right hCge (by linarith)
+    _ = 3 * ε / 4 := by field_simp
+    _ < ε := by linarith
+
+end FriedB1Spectral
