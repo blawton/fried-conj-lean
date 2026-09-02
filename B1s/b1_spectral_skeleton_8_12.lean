@@ -407,7 +407,9 @@ The V5 rank-N repair (preflight #2 = analysis_ledger B10) decomposes as:
                       majorant's tails, for every truncation rank N;
     v5_tail_tendsto — the majorant's tails vanish as N → ∞ (the ε(N) → 0 of V5b);
     v5_rank_split   — THE THREE-TERM V5 STATEMENT the budget consumes: spectral-sum
-                      drift ≤ (low-N drift, cited to stochastic stability [Drouot/DZ])
+                      drift ≤ (low-N drift, cited to stochastic stability [Drouot Thm 5(i): explicit
+                      first-power law −(1/b)∫⟨∇_S u,∇_S v⟩ + O(b⁻²); read #3 9/01,
+                      vault drouot_read_3_9_01.md §3])
                       + tail(λ, N) + tail(μ, N). This is the "rerun b1_per_length with
                       three terms" architecture of the 8/15 V5 flag, machine-checked.
 Power-law instantiation (t i = (i+1)^{−αℓ}, summable iff αℓ > 1 — p-series, citable to
@@ -653,7 +655,8 @@ packaging ITSELF machine-checked and BYPASSES the placeholder:
 `b1_total_error_vanishes_ofPointwise` reaches B1's conclusion from the
 citation-shaped inputs directly — ⚡its axiom audit must list V1–V4 (+ vehicle
 constants) and NEITHER V5 NOR D. Hypothesis shapes match endpoints_8_20 §4:
-  `hpt`   — per-resonance convergence (Drouot's citable form, twisted flag);
+  `hpt`   — per-resonance convergence (Drouot Thm 5 verbatim shape, [C] scalar;
+            twisted/all-degree = [W] appendix — read #3 9/01, vault drouot_read_3_9_01.md);
   `htail` — uniform tail smallness at fixed cuts (hdom at first-power grade);
   `hlam`/`hmu` — trace-class summability bookkeeping (V1/V2-grade facts). -/
 
@@ -807,7 +810,8 @@ theorem b1_eps_step (b : ℝ) (hb : b₀ ≤ b) (ε C : ℝ) (hε : 0 < ε) (hC0
 /-- B1's CONCLUSION FROM THE CITATION-SHAPED INPUTS DIRECTLY — V5 and D bypassed.
 ⚡AUDIT CRITERION: `#print axioms` must list V1–V4 + vehicle constants and NEITHER
 V5 NOR D. The two substantive hypotheses are the SAME pair as leg 5b
-(endpoints_8_20 §4): `hpt` = Drouot per-resonance convergence (twisted flag);
+(endpoints_8_20 §4): `hpt` = Drouot Thm 5 per-resonance convergence ([C] scalar,
+[W] twisted — read #3 9/01, vault drouot_read_3_9_01.md);
 `htail` = hdom's tail control at first-power grade. `hlam`/`hmu` are V1/V2-grade
 trace-class bookkeeping. (8/31: proof works against an opaque local constant C so
 the default elaboration budget suffices — no `set_option maxHeartbeats`.) -/

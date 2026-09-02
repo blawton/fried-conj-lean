@@ -25,7 +25,8 @@ The informal 4-step sketch and where each step lands here:
       never as a Set.Finite hypothesis. `endpointClause_informalShape` carries
       the Finite hypothesis with a `_`-prefixed name to make the non-consumption
       machine-visible (the m1Consumption/negCurv pattern of endpoints_8_20).
-  (2) stochastic stability [Drouot, [C], twisted scope = read #3]: `h_attain` —
+  (2) stochastic stability [Drouot Thm 5 "Conversely" clause, [C] scalar; twisted = [W]; read #3
+  DONE 9/01, vault drouot_read_3_9_01.md]: `h_attain` —
       every element of Σ∞ (in the citable region) is attained: every neighborhood
       of it eventually meets the approximant spectrum Spec b.
   (3) H (uniform gap, spectral-set shadow): `h_gap` — eventually in b,
@@ -67,7 +68,8 @@ flow (the b = ∞ member, living on anisotropic spaces — set grade again). -/
 
 /-- ROUTE (ii) MAIN THEOREM (attainment grade). Hypotheses = the two citations:
 
-`h_attain` — [Drouot stochastic stability, [C], twisted extension flagged, read #3]:
+`h_attain` — [Drouot Thm 5 (converse clause: exactly m eigenvalues in D(λ₀,r₀) for all small ε),
+[C] scalar, [W] bundle-valued; read #3 9/01 → vault drouot_read_3_9_01.md §3]:
 every z ∈ Σ∞ in the citable region {Re z < β₀} is ATTAINED — every neighborhood U
 of z eventually meets Spec b as b → ∞. The restriction `z.re < β₀` is the ONLY
 trace of the essential-gap citation: it delimits where Σ∞ is discrete, hence where
@@ -111,7 +113,9 @@ essential-gap scoping), per-point attainment ALONE closes the argument at β its
 — no finiteness, no β₀, no second citation. If Drouot's twisted statement can be
 read with neighborhoods of arbitrary resonances (it can wherever Σ∞ is discrete),
 the research note needs ONLY [Drouot] + [H] for the endpoint clause on the full
-gap strip. -/
+gap strip. ⚡READ #3 (9/01): Drouot's Thm 5 IS per-resonance and unscoped (any R),
+so THIS is the theorem the note cites; the essential-gap citation leaves route (ii)
+— vault drouot_read_3_9_01.md §0, §3. -/
 theorem endpointClause_ofAttainment_unrestricted (Spec : ℝ → Set ℂ)
     (SpecInf : Set ℂ) (β : ℝ)
     (h_attain : ∀ z ∈ SpecInf, ∀ U ∈ 𝓝 z, ∀ᶠ b in atTop, (Spec b ∩ U).Nonempty)

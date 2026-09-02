@@ -2,7 +2,7 @@
 
 Machine-checked verification layer of the H ⇒ Fried program (vault:
 `~/Downloads/fried_con/Fried Program/` — start at `Front Page.md` for the
-mathematics, `program_chronology_8_12_to_8_27.md` for the dated arc). One Lake
+mathematics, `program_chronology.md` for the dated arc). One Lake
 project, one build, one audit surface. Lean 4 (`lean-toolchain` v4.33.0) + Mathlib.
 
 ## The method (read this first)
@@ -27,7 +27,8 @@ fried_of_inputs (T = zeta-side reading) ⟵ endpointGlue
   hconst  ⟵ BL Thm 6.7.1 [C]                      (constancy; M1 read DONE)
   h0      ⟵ BL Thm 8.2.1 [C]                      (b→0 torsion; residue: hbundle)
   hinf    ⟵ v5_limit_assembly_ofPointwise (endpoints §4) + hread [V2, flat trace]
-    hpt     ⟵ Drouot stochastic stability [C, twisted flag, read #3]
+    hpt     ⟵ Drouot Thm 5 [C, scalar, shape exact — read #3 DONE 9/01]
+              + [W] bundle-valued appendix (vault drouot_read_3_9_01.md §4)
     htail   ⟵ hdom — THE one owed estimate (route: vault hdom_route_8_27)
     hl, hm  ⟵ trace-class bookkeeping [V1/V2-grade]
 B1's own surface (b1_total_error_vanishes_ofPointwise) = the SAME (hpt, htail) pair.
@@ -38,7 +39,7 @@ h_mixing file : [endpoint mixing ⇒ uniform gap] — hmix = stage-1 × stage-2
 ```
 
 So the entire program reduces, at audit grade, to: two citations to verify
-(Drouot, V2), one estimate to prove (hdom), one photo (hbundle), and the
+(Drouot ✓ 9/01 → one appendix [W], V2), one estimate to prove (hdom), one photo (hbundle), and the
 H-side sockets awaiting stage 1 (ours) and stage 2 (the unwritten paper).
 
 ## The three verified layers
@@ -62,6 +63,7 @@ H-side sockets awaiting stage 1 (ours) and stage 2 (the unwritten paper).
 | `route_ii_resolvent_8_28` | route (ii), holomorphic grade | limit-holomorphy, no-pole bridge; Montel absent from Mathlib ⇒ loc-unif is the citation shape | zero axioms |
 | `route_ii_correlation_8_28` | route (ii), quantitative grade + consistency | `c1_no_uniform_C_at_isometric_endpoint` (uniform C on L² is FALSE — b^K forced) + witness + `c2` interchange | zero axioms |
 | `h_mixing_equivalence_8_31` | stage 1 (mixing ⇒ H) | `block_telescope`, `uniform_gap_of_block_mixing` (H's shape from `hburn` + `hmix`), geometric→exp pieces, ⚡Itô–Kawada mechanism PROVED (`midpoint_strict_contraction`, `opNorm_avg_lt_one`), `dissipation_identity` (route 5) | zero axioms |
+| `fried_crossing_9_03` | Fried at a codimension-one CROSSING metric (memos crossing_construction_rederivation_9_03 / crossing_rate_ratio_9_03 / jordan_cluster_torsion_9_03 / zero_cluster_torsion_9_02) — the ledger for ζ(0; g_σ) = τ_R·(pole rate / zero rate) ≠ τ_R | P1 `TorsionCore` (explicit-matrix CD Def 3.2 torsion: semisimple −1, Jordan −(1+λ)/λ, `jordan_torsion_eq_neg_ratio` = Lemma A shape), P2 `OrderCount.order_zero_of_exact` (exact C₀¹→C₀²→C₀³ + ⋆ ⇒ c₂ = 2c₁ ⇒ ζ-order 0), P3 `Crossing.crossing_exists_unique` (IVT + monotone), P4 `RateRatio.crossing_value` (R(σ) = τ_R·b/a), P5 `Capstone.fried_fails_at_crossing_of_inputs` (hdouble, hsym, hrate_nonclosed, hrate_zero, hcont, hfried_off, hexact, hacyc, hdual + bookkeeping hdims, hτR) | zero axioms (hypothesis-shaped); `#print axioms` on P1–P5 = built-ins only (audited 9/03) |
 | `Basic.lean` | lake stub | — | — |
 | `*.bak_clobbered_8_31` | recovery backup (8/31 splice incident) — keep until git exists | — | — |
 

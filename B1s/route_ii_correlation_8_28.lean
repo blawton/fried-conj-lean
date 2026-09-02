@@ -35,8 +35,9 @@ shows that route (ii) at correlation grade needs a QUANTIFIED convergence rate i
 (locally in t) from stochastic stability — a schedule can only be run through an
 explicit error modulus E(b,t) — whereas the spectral-grade siblings consume only
 qualitative convergence of resonances (cf. `hpt` in endpoints_8_20.lean, a bare
-Tendsto). Whether Drouot [Dr17] provides the quantified form is exactly the read-#3
-question; the note should choose the grade by what the citation actually carries.
+Tendsto). ⚡READ #3 ANSWER (9/01): Drouot [Dr17] does NOT provide a quantified
+semigroup/correlation modulus — Thm 5 is spectral/resolvent only ⇒ route (ii) runs
+at grade A (or B), never C, on this citation (vault drouot_read_3_9_01.md §3).
 
 ⚡THE GRADE LADDER (8/28 peer check-in; what each route-(ii) grade demands of Drouot):
   A (attainment/spectral-set, route_ii_attainment_8_28.lean)  — per-point attainment
@@ -81,7 +82,8 @@ Hypotheses and what they cite:
             n_b(t) → 1 as b → ∞. This is the scalar shadow of "the twisted flow
             semigroup at b = ∞ is an isometry on L² (volume-preserving flow, unitary
             twist) and e^{-tL_b} → e^{-tL_∞} strongly" — the stochastic-stability
-            convergence direction [Drouot Dr17, grade C], evaluated on a fixed unit
+            convergence direction [Drouot Dr17 — grade C NOT in print, read #3 9/01], evaluated on
+            a fixed unit
             vector.
   `hunif` — the b-uniform decay reading of the V4 working display
             (hypothesis_v4_working_8_17.md §1): C, β independent of b, eventually in
@@ -157,7 +159,8 @@ a quantified rate. Hypotheses and their citation shapes:
              t ≥ 0, c_b(t) ≤ C·b^K·e^{-βt}. Real power b^K; K ≥ 0 and b₁ ≥ 1 are
              semantic, never consumed.
   `hE`     — the error-modulus form of two-directional stochastic stability at
-             correlation grade [Drouot Dr17; twisted scope = read #3]:
+             correlation grade [Drouot Dr17; ⚡read #3 9/01: NOT provided — vault
+             drouot_read_3_9_01.md §3]:
              |c_∞(t) − c_b(t)| ≤ E(b,t). ⚡THE QUANTIFIED SHAPE IS THE POINT: the
              spectral-grade siblings consume only qualitative Tendsto (cf. `hpt` in
              endpoints_8_20.lean); correlation grade cannot run a schedule through a

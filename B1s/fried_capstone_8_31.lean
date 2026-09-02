@@ -12,8 +12,8 @@ THE WIRING (hypothesis → citation → where it gets discharged):
   `hrepr`  — definition of the spectral reading (graded/supertrace objects — the
              8/28 falsifier's finding 1)
   `hl,hm`  — trace-class summability [V1/V2-grade bookkeeping]
-  `hpt`    — per-resonance convergence [Drouot stochastic stability; twisted flag;
-             read #3]
+  `hpt`    — per-resonance convergence [Drouot Thm 5, [C] scalar verbatim shape;
+             [W] bundle-valued extension — read #3 DONE 9/01, vault drouot_read_3_9_01.md]
   `htail`  — uniform tail smallness at fixed cuts [hdom — THE one owed estimate;
              route: hdom_route_8_27]
   `hread`  — the torsion quantity is read as the spectral trace at large b

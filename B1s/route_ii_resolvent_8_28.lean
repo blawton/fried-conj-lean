@@ -40,7 +40,9 @@ twisted scope flagged] is LOCALLY UNIFORM (compact-set-uniform) convergence of
 resolvent matrix elements on the strip, not merely pointwise convergence. Drouot's
 resolvent convergence is norm-convergence on compacts away from limit resonances,
 which restricts to exactly this scalar shape, so the demand is expected to be met —
-but it is the thing to CHECK, and this file is the machine ledger of why pointwise
+and it CHECKS (read #3, 9/01: proof-internal in Drouot Thm 5, eqs (5.8)–(5.10),
+rate O(1/b) on the FIXED anisotropic space, scalar — vault drouot_read_3_9_01.md §3), and this
+file is the machine ledger of why pointwise
 would not suffice (`limit_locallyBounded_ofPointwise` shows what pointwise DOES buy:
 conclusion (ii) but not (i)).
 
@@ -91,7 +93,8 @@ of the kinetic resolvent; `f` = its b → ∞ limit; `Ω` = the open strip/half-
              off spec(L_b), and H keeps spec(L_b) out of the strip eventually in b
              (Front Page: "uniform-gap H keeps those eigenvalues out of {Re λ < β}").
   `h_conv` — locally uniform convergence of the matrix elements on Ω: the stochastic-
-             stability citation [Drouot, [C], twisted scope = read #3], demanded at
+             stability citation [Drouot Thm 5 proof (5.8)–(5.10), [C] scalar, [W] twisted; read #3
+             DONE 9/01, vault drouot_read_3_9_01.md], demanded at
              EXACTLY this grade because Mathlib has no Montel/Vitali upgrade from
              pointwise (see file header).
 Consumes Mathlib's Weierstrass convergence theorem. -/
@@ -147,7 +150,8 @@ elements, conclusion (ii) still holds PROVIDED the uniform local bound `h_bdd` i
 supplied separately — and then h_bdd is genuinely H's resolvent-grade clause:
   `h_bdd`  — uniform local bound: H's gap gives ‖R_b(z)‖ ≤ C/dist(z, spec) uniformly
              on compacts of the strip, hence |⟨R_b(z)u, v⟩| ≤ M := C'‖u‖‖v‖ there.
-  `h_conv` — pointwise convergence on Ω [Drouot at pointwise grade].
+  `h_conv` — pointwise convergence on Ω [Drouot at pointwise grade; read #3 9/01: Thm 5 gives this
+  verbatim, scalar].
 Conclusion (i) is NOT recoverable at this grade inside Mathlib (no Montel/Vitali —
 file header), which is exactly why the research note must demand loc-unif from the
 literature; this theorem records the fallback perimeter. -/
@@ -199,7 +203,8 @@ theorem blowup_of_tendsto_atTop (g : ℂ → ℂ) (z₀ : ℂ)
 /-- ROUTE (ii), RESOLVENT GRADE, ASSEMBLED. From exactly two named inputs —
   `h_holo` (H's uniform gap: eventual holomorphy of the resolvent matrix elements on
             the strip) and
-  `h_conv` (stochastic stability [Drouot, [C], twisted flag] at locally-uniform grade
+  `h_conv` (stochastic stability [Drouot §5.2 (5.8)–(5.10), [C] scalar, [W] twisted — read #3
+  9/01, vault drouot_read_3_9_01.md] at locally-uniform grade
             — the demanded citation shape, since Mathlib has no Montel/Vitali) —
 the limit matrix element is (i) holomorphic on Ω, (ii) locally bounded on Ω, and
 (iii) pole-free: no continuation g of f off any z₀ ∈ Ω can blow up at z₀. Instantiated

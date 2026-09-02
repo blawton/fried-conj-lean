@@ -143,7 +143,8 @@ prove, for some choice of rank schedule N(b) → ∞:
   `hfin`  — Σ_{i < N(b)} ‖λᵢ(b)^ℓ − μᵢ^ℓ‖ → 0: the eigenvalue powers below the
             schedule converge to their transport limits, summably. PROOF ROUTE (V5a):
             per-eigenvalue convergence with multiplicity on compact spectral regions
-            — stochastic stability, [C] Drouot/DZ, twisted extension flagged —
+            — stochastic stability, [C] Drouot Thm 5 (scalar, verbatim shape) + [W] bundle-valued
+            extension; read #3 DONE 9/01: vault drouot_read_3_9_01.md —
             upgraded to the summed form by the count below the contour being finite
             at each b (V1 trace-class + contour enumeration).
   `htail` — Σ_{i ≥ N(b)} ‖λᵢ(b)‖^ℓ → 0: the spectrum above the schedule contributes
@@ -213,7 +214,8 @@ is a FIXED finite sum of vanishing terms (`tendsto_finsetSum`), both tails ≤ �
 `tail_anti`, and `v5_rank_split` glues. So the two named obligations, in the shape
 the literature carries them:
   `hpt`   — λᵢ(b) → μᵢ for each fixed i (resonances converge with multiplicity on
-            compacts: Drouot/DZ stochastic stability, twisted extension flagged);
+            compacts: Drouot Thm 5 [C, scalar; EXACT shape] + [W] twisted/all-degree extension —
+            read #3 9/01, vault drouot_read_3_9_01.md §3);
   `htail` — uniform tail smallness at fixed cuts (hdom at the graded,
             radius-truncated grade — the one owed estimate). -/
 theorem v5_limit_assembly_ofPointwise (F : ℝ → ℂ) (lam : ℝ → ℕ → ℂ) (mu : ℕ → ℂ)
