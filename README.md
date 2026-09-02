@@ -65,7 +65,6 @@ H-side sockets awaiting stage 1 (ours) and stage 2 (the unwritten paper).
 | `h_mixing_equivalence_8_31` | stage 1 (mixing ⇒ H) | `block_telescope`, `uniform_gap_of_block_mixing` (H's shape from `hburn` + `hmix`), geometric→exp pieces, ⚡Itô–Kawada mechanism PROVED (`midpoint_strict_contraction`, `opNorm_avg_lt_one`), `dissipation_identity` (route 5) | zero axioms |
 | `fried_crossing_9_03` | Fried at a codimension-one CROSSING metric (memos crossing_construction_rederivation_9_03 / crossing_rate_ratio_9_03 / jordan_cluster_torsion_9_03 / zero_cluster_torsion_9_02) — the ledger for ζ(0; g_σ) = τ_R·(pole rate / zero rate) ≠ τ_R | P1 `TorsionCore` (explicit-matrix CD Def 3.2 torsion: semisimple −1, Jordan −(1+λ)/λ, `jordan_torsion_eq_neg_ratio` = Lemma A shape), P2 `OrderCount.order_zero_of_exact` (exact C₀¹→C₀²→C₀³ + ⋆ ⇒ c₂ = 2c₁ ⇒ ζ-order 0), P3 `Crossing.crossing_exists_unique` (IVT + monotone), P4 `RateRatio.crossing_value` (R(σ) = τ_R·b/a), P5 `Capstone.fried_fails_at_crossing_of_inputs` (hdouble, hsym, hrate_nonclosed, hrate_zero, hcont, hfried_off, hexact, hacyc, hdual + bookkeeping hdims, hτR) | zero axioms (hypothesis-shaped); `#print axioms` on P1–P5 = built-ins only (audited 9/03) |
 | `Basic.lean` | lake stub | — | — |
-| `*.bak_clobbered_8_31` | recovery backup (8/31 splice incident) — keep until git exists | — | — |
 
 Root `B1s.lean` imports every file; keep it current when adding files.
 Import direction: `endpoints_8_20` imports `b1_spectral_skeleton_8_12` (never the
@@ -92,8 +91,8 @@ lake env lean B1s/<file>.lean               # elaborate ONE file (no build-dir w
   `b1_total_error_vanishes_ofPointwise` — proof works against an opaque `C`, with
   `finite_drift_tendsto` and `b1_eps_step` factored out).
 - **Scripted edits: `cp file file.bak` first + assert marker uniqueness**
-  (`s.count(marker) == 1`). ⚡This directory is NOT under git (`.github` exists,
-  `.git` does not; recommended: `git init` + commit — Ben runs git). Recovery of
-  last resort: Claude session transcripts hold every Write/Edit payload.
+  (`s.count(marker) == 1`). ⚡Under git since 9/02 (`git init` by Ben; Ben runs ALL git — agents only edit
+  files and never commit). Keep `.bak*` out of the tree (gitignored); commit after each
+  green build.
 - Dates in filenames are creation dates; content is appended in sections with dated
   headers (`/-! ## ... (8/28 ...) -/`), matching the vault convention.
