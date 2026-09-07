@@ -1,6 +1,6 @@
 /-
 FRIED AT A CODIMENSION-ONE CROSSING — THE LEDGER (9/03; vault memos
-crossing_construction_rederivation_9_03 [cleanest statement], crossing_rate_ratio_9_03
+fried_counterexample_rederivation_9_03 [cleanest statement], crossing_rate_ratio_9_03
 [rate computation], jordan_cluster_torsion_9_03 [Lemma A], zero_cluster_torsion_9_02
 [order m = dim C₀² − 2 dim C₀¹, cluster torsions]).
 
