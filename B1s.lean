@@ -10,3 +10,6 @@ import B1s.h_mixing_equivalence_8_31
 import B1s.fried_capstone_8_31
 import B1s.fried_crossing_9_03
 import B1s.fried_crossing_rate_9_07
+import B1s.fried_crossing_firstvariation_9_08
+import B1s.fried_crossing_purezeros_9_08
+import B1s.fried_counterexample_main

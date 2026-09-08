@@ -37,6 +37,11 @@ the branch must start within r₀δ/2 of 0 — true for small θ since s*(θ) = 
 "for all sufficiently small θ ≠ 0"). Off-crossing Fried (`hfried_off`) is only needed on
 |τ| < δ, and the value theorem only needs it eventually near σ (`crossing_value_local`).
 
+§6 (9/08) SATURATION: hdouble's "no other degree-1 resonance in D" — the memo's one uncited
+step (ν₁ Selberg factor) — is replaced by a rank count: rank Π₁ = 2 (DGRS Prop 7.7 at θ = 0 +
+bounded-twist rank constancy) and two independent states at s* ⇒ the restricted operator is
+s*·1 (`Saturation.scalar_of_two_eigenvectors`), hence no third eigenvalue and semisimplicity.
+
 ⚡AUDIT CRITERION: ZERO axioms of its own — `#print axioms` on every theorem below lists
 only Lean built-ins. This file does NOT touch `fried_crossing_9_03` (still the ledger for
 the original flat hypothesis list; both capstones stand).
@@ -197,7 +202,7 @@ theorem continuousAt_dwPlus {p : ℝ × ℝ × ℝ × ℝ} (hD : 0 < disc p.1 p.
 /-- THE RATE LEMMA. From (i) C¹ cluster data a, b (trace and determinant of N, with
 τ-derivatives a', b', all four continuous at (0,0)), (ii) a(0,0) = r₀ > 0, (iii) b(0,0) = 0:
 on a full neighbourhood |θ| < ε, |τ| < ε the discriminant is positive, the twin branch is
-differentiable in τ with derivative `dtwin`, and that derivative is ≥ r₀/2. -/
+differentiable in τ with derivative `dtwin`, and that derivative lies in [r₀/2, 2r₀]. -/
 theorem twin_rate_of_cluster (sStar : ℝ → ℝ) (a b a' b' : ℝ → ℝ → ℝ) {r₀ : ℝ}
     (hr₀ : 0 < r₀)
     (hderiv_a : ∀ θ τ, HasDerivAt (a θ) (a' θ τ) τ)
@@ -210,7 +215,8 @@ theorem twin_rate_of_cluster (sStar : ℝ → ℝ) (a b a' b' : ℝ → ℝ → 
     ∃ ε > 0, ∀ θ τ : ℝ, |θ| < ε → |τ| < ε →
       0 < disc (a θ τ) (b θ τ) ∧
       HasDerivAt (twin sStar a b θ) (dtwin (a θ τ) (b θ τ) (a' θ τ) (b' θ τ) τ) τ ∧
-      r₀ / 2 ≤ dtwin (a θ τ) (b θ τ) (a' θ τ) (b' θ τ) τ := by
+      r₀ / 2 ≤ dtwin (a θ τ) (b θ τ) (a' θ τ) (b' θ τ) τ ∧
+      dtwin (a θ τ) (b θ τ) (a' θ τ) (b' θ τ) τ ≤ 2 * r₀ := by
   -- the data map (θ,τ) ↦ (a, b, a', b') and the discriminant along it
   set Φ : ℝ × ℝ → ℝ × ℝ × ℝ × ℝ :=
     fun p => (a p.1 p.2, b p.1 p.2, a' p.1 p.2, b' p.1 p.2) with hΦ
@@ -243,10 +249,10 @@ theorem twin_rate_of_cluster (sStar : ℝ → ℝ) (a b a' b' : ℝ → ℝ → 
   have hD0 : D (0, 0) = r₀ := by
     simp only [hD, dtwin, ha0, hb0, zero_mul, add_zero]
     exact wPlus_at_cddp hr₀
-  have hev2 : ∀ᶠ p : ℝ × ℝ in 𝓝 (0, 0), r₀ / 2 < D p := by
+  have hev2 : ∀ᶠ p : ℝ × ℝ in 𝓝 (0, 0), D p ∈ Set.Ioo (r₀ / 2) (2 * r₀) := by
     apply hDc.eventually
     rw [hD0]
-    exact lt_mem_nhds (by linarith)
+    exact Ioo_mem_nhds (by linarith) (by linarith)
   -- extract a ball
   obtain ⟨ε, hε, hball⟩ := Metric.eventually_nhds_iff.mp (hev1.and hev2)
   refine ⟨ε, hε, fun θ τ hθ hτ => ?_⟩
@@ -254,7 +260,7 @@ theorem twin_rate_of_cluster (sStar : ℝ → ℝ) (a b a' b' : ℝ → ℝ → 
     rw [Prod.dist_eq, Real.dist_eq, Real.dist_eq, sub_zero, sub_zero]
     exact max_lt hθ hτ
   obtain ⟨hpos, hgt⟩ := hball hmem
-  exact ⟨hpos, hasDerivAt_twin (hderiv_a θ τ) (hderiv_b θ τ) hpos, hgt.le⟩
+  exact ⟨hpos, hasDerivAt_twin (hderiv_a θ τ) (hderiv_b θ τ) hpos, hgt.1.le, hgt.2.le⟩
 
 end TwinRate
 
@@ -454,7 +460,7 @@ theorem fried_fails_at_crossing_of_cluster_inputs
     fried_fails_at_crossing_local (K := K) (V₁ := V₁) (V₂ := V₂) (V₃ := V₃)
       (twin sStar a b θ) (fun τ => dtwin (a θ τ) (b θ τ) (a' θ τ) (b' θ τ) τ) z R c
       (r₀ / 2) ε τR hτR (by positivity) hs0 hsmall'
-      (fun τ hτ => ⟨(hrate θ τ hθε hτ).2.1, (hrate θ τ hθε hτ).2.2⟩)
+      (fun τ hτ => ⟨(hrate θ τ hθε hτ).2.1, (hrate θ τ hθε hτ).2.2.1⟩)
       hrate_zero hcont hfried_off hexact hacyc hdual hdims
   refine ⟨σ, hσpos, ?_, hσlt, hσ0, huniq, hord, α, ratio, hα, hb, hlim, hratio_eq, hratio,
     hval, hne, htors⟩
@@ -463,5 +469,62 @@ theorem fried_fails_at_crossing_of_cluster_inputs
     _ = 2 * |sStar θ| / r₀ := by rw [div_div_eq_mul_div]; ring
 
 end Capstone
+
+/-! ## §6 (9/08) SATURATION — hdouble's "nothing else in the disc" from the rank count
+
+The one uncited step inside hdouble (memo: the ν₁ Selberg factor Z_{S,ν₁}(λ+1) has no zero
+in a θ-independent disc D about 0) is bypassed by counting. Inputs, both ALREADY in the
+ledger: (r) the degree-1 Riesz projector Π₁(θ,0) onto D has rank 2 — at θ = 0 this is DGRS
+Prop 7.7 (m₁(0) = 2·dim H¹ = 2b₁ = 2) plus discreteness of resonances (choose D), and the rank
+is constant in θ because the twist iθ·ω(X) is a bounded perturbation (the θ-half of input
+(B)); (e) two linearly independent states d₀f, I·d₀f at s*(θ) in ran Π₁ (rederivation A2,
+constructed from the degree-0 state). Conclusion: the restricted operator IS s*·1 — every
+eigenvalue in D equals s*, geometric = algebraic multiplicity = 2, no Jordan block — which
+is exactly the `M(θ,0) = s*·1` that §2 of this file consumed as the divisibility premise.
+The ν₁ factor is never analysed. -/
+namespace Saturation
+
+variable {K : Type*} [Field K] {V : Type*} [AddCommGroup V] [Module K V]
+
+/-- Two independent eigenvectors with the same eigenvalue in a 2-dimensional space force the
+operator to be that scalar. -/
+theorem scalar_of_two_eigenvectors (hdim : Module.finrank K V = 2) (T : V →ₗ[K] V) (s : K)
+    (v₁ v₂ : V) (hind : LinearIndependent K ![v₁, v₂])
+    (h₁ : T v₁ = s • v₁) (h₂ : T v₂ = s • v₂) :
+    T = s • LinearMap.id := by
+  have hcard : Fintype.card (Fin 2) = Module.finrank K V := by simp [hdim]
+  let b := basisOfLinearIndependentOfCardEqFinrank hind hcard
+  have hb : ∀ i, b i = ![v₁, v₂] i := fun i => by
+    simp [b, coe_basisOfLinearIndependentOfCardEqFinrank]
+  refine b.ext fun i => ?_
+  rw [hb]
+  fin_cases i
+  · simpa using h₁
+  · simpa using h₂
+
+/-- SATURATION: under the same hypotheses every eigenvalue of T equals s — there is no third
+resonance in the disc. -/
+theorem eigenvalue_eq_of_saturated (hdim : Module.finrank K V = 2) (T : V →ₗ[K] V) (s : K)
+    (v₁ v₂ : V) (hind : LinearIndependent K ![v₁, v₂])
+    (h₁ : T v₁ = s • v₁) (h₂ : T v₂ = s • v₂)
+    {μ : K} {v : V} (hv : v ≠ 0) (hμ : T v = μ • v) : μ = s := by
+  have hT := scalar_of_two_eigenvectors hdim T s v₁ v₂ hind h₁ h₂
+  rw [hT] at hμ
+  simp only [LinearMap.smul_apply, LinearMap.id_coe, id_eq] at hμ
+  have : (μ - s) • v = 0 := by rw [sub_smul, hμ, sub_self]
+  rcases smul_eq_zero.mp this with h | h
+  · exact (sub_eq_zero.mp h)
+  · exact absurd h hv
+
+/-- No Jordan block: (T − s)² = 0 already at the first power, so algebraic multiplicity of s
+is exactly the rank 2 = its geometric multiplicity (SEMISIMPLE double point — the premise
+`M(θ,0) = s*·1` of §2). -/
+theorem semisimple_of_saturated (hdim : Module.finrank K V = 2) (T : V →ₗ[K] V) (s : K)
+    (v₁ v₂ : V) (hind : LinearIndependent K ![v₁, v₂])
+    (h₁ : T v₁ = s • v₁) (h₂ : T v₂ = s • v₂) :
+    T - s • LinearMap.id = 0 := by
+  rw [scalar_of_two_eigenvectors hdim T s v₁ v₂ hind h₁ h₂, sub_self]
+
+end Saturation
 
 end FriedCrossing
