@@ -5,7 +5,7 @@ Enforces: every row names exactly one binder; the two sets coincide. Exit 1 on d
 import re, sys, pathlib
 root = pathlib.Path(__file__).resolve().parent.parent
 lean = (root / "B1s/fried_counterexample_main.lean").read_text()
-sig = lean.split("theorem fried_counterexample_of_inputs")[1].split(":= by")[0]
+sig = lean.split("theorem fried_counterexample_of_resolvent_inputs")[1].split(":=\n")[0]
 binders = set(re.findall(r"\((h[\w₀₁₂₃₄'τθ]+)\s*:", sig))
 readme = (root / "README.md").read_text()
 tbl = readme.split("## The ledger")[1].split("Conclusion:")[0]

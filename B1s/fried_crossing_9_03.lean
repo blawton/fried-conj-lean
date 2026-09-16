@@ -31,7 +31,7 @@ every theorem below (P1–P5) lists only Lean built-ins.
                     analytic inputs (hdouble, hsym, hrate_nonclosed, hrate_zero, hcont,
                     hfried_off, hexact, hacyc, hdual; bookkeeping hdims, hτR).
 -/
-import Mathlib
+import B1s.fried_statement_defs_9_14
 
 set_option linter.style.header false
 
@@ -51,16 +51,6 @@ namespace TorsionCore
 
 variable {K : Type*} [Field K]
 
-/-- d₁ : C¹ → C², u ↦ (Xu, d₀u) = (0, w₁). -/
-def d₁ : Matrix (Fin 3) (Fin 1) K := !![0; 1; 0]
-
-/-- d₂ : C² → C³ for the (x, l)-cluster: α∧u ↦ −α∧w₁ + Lu, w₁ ↦ 0,
-w₂ ↦ x·α∧w₁ + l·Lu (columns in the C²-basis, rows in the C³-basis). -/
-def d₂ (x l : K) : Matrix (Fin 3) (Fin 3) K := !![-1, 0, x; 0, 0, 0; 1, 0, l]
-
-/-- d₃ : C³ → C⁴: α∧w₁ ↦ 0, α∧w₂ ↦ −l·α∧Lu, Lu ↦ 0. -/
-def d₃ (l : K) : Matrix (Fin 1) (Fin 3) K := !![0, -l, 0]
-
 theorem d₂_mul_d₁ (x l : K) : d₂ x l * (d₁ : Matrix (Fin 3) (Fin 1) K) = 0 := by
   ext i j
   fin_cases j
@@ -70,20 +60,6 @@ theorem d₃_mul_d₂ (x l : K) : d₃ l * d₂ x l = 0 := by
   ext i j
   fin_cases i
   fin_cases j <;> simp [d₃, d₂, Matrix.mul_apply, Fin.sum_univ_succ]
-
-/-- CD Def 3.2 basis-change matrix in degree 2: columns ∂a₁ = d₁u, then the complement
-basis A² = (α∧u, w₂). -/
-def D₂mat : Matrix (Fin 3) (Fin 3) K :=
-  (Matrix.of ![d₁ *ᵥ ![1], ![1, 0, 0], ![0, 0, 1]])ᵀ
-
-/-- Degree 3: columns ∂a₂ = (d₂(α∧u), d₂(w₂)), then the complement A³ = (−α∧w₂)
-(the sign choice of zero_cluster_torsion_9_02 §2.3; it cancels in the torsion). -/
-def D₃mat (x l : K) : Matrix (Fin 3) (Fin 3) K :=
-  (Matrix.of ![d₂ x l *ᵥ ![1, 0, 0], d₂ x l *ᵥ ![0, 0, 1], ![0, -1, 0]])ᵀ
-
-/-- Degree 4: the single column ∂a₃ = d₃(−α∧w₂); A⁴ = 0. -/
-def D₄mat (l : K) : Matrix (Fin 1) (Fin 1) K :=
-  (Matrix.of ![d₃ l *ᵥ ![0, -1, 0]])ᵀ
 
 theorem det_D₂mat : (D₂mat : Matrix (Fin 3) (Fin 3) K).det = -1 := by
   rw [D₂mat, det_transpose, det_fin_three]
@@ -98,28 +74,11 @@ theorem det_D₄mat (l : K) : (D₄mat l).det = l := by
   rw [D₄mat, det_transpose, det_fin_one]
   simp [d₃]
 
-/-- CD Def 3.2 sign exponent N(C^•) = ½ Σ_j dim A^j (dim A^j + (−1)^{j+1}) for the
-complement dimensions (1, 2, 1, 0) in degrees 1..4: ½(1·2 + 2·1 + 1·2 + 0) = 3. -/
-def N_C : ℕ := 3
-
-/-- CD Def 3.2 chirality-element sign exponent m(C^•) = ½ Σ_{j≤r} dim C^j (dim C^j +
-(−1)^{r+j}), r = 2, dims (0, 1, 3): ½(0 + 1·0 + 3·4) = 6. -/
-def m_C : ℕ := 6
-
 theorem N_C_eq : (N_C : ℤ) = (1 * (1 + 1) + 2 * (2 - 1) + 1 * (1 + 1) + 0) / 2 := by
   decide
 
 theorem m_C_eq : (m_C : ℤ) = (0 + 1 * (1 - 1) + 3 * (3 + 1)) / 2 := by
   decide
-
-/-- The refined torsion τ(C^•, Γ_ϑ) of the (x, l)-cluster in CD's normalisation
-(Def 3.2 with λ_j = D_j⁻¹, c_j = λ_j·μ(∂a_{j−1} ⊗ a_j)): τ = (−1)^{N+m} ∏ λ_j^{(−1)^j}
-= (−1)^{N_C+m_C} · D₁ · D₂⁻¹ · D₃ · D₄⁻¹ with D₁ = det [u] = 1. The Γ_ϑ-basis signs in
-c_Γ cancel pairwise (zero_cluster_torsion_9_02 §2.3, validated against CD Prop 6.2). -/
-def refinedTorsion (x l : K) : K :=
-  (-1) ^ (N_C + m_C) *
-    ((!![(1 : K)]).det * (D₂mat : Matrix (Fin 3) (Fin 3) K).det⁻¹ * (D₃mat x l).det *
-      (D₄mat l).det⁻¹)
 
 theorem refinedTorsion_eq (x l : K) (hl : l ≠ 0) : refinedTorsion x l = -(l + x) / l := by
   rw [refinedTorsion, det_D₂mat, det_D₃mat, det_D₄mat, det_fin_one]
@@ -172,10 +131,6 @@ theorem finrank_middle_of_exact (f : V₁ →ₗ[K] V₂) (g : V₂ →ₗ[K] V�
   rw [LinearMap.ker_eq_bot.mpr hf, finrank_bot, add_zero] at h1
   rw [LinearMap.range_eq_top.mpr hg, finrank_top, ← hfg, h1] at h2
   omega
-
-/-- CD (5.9) footnote 5 with q = 2: the order of ζ at a resonance is
-Σ_k (−1)^k dim C₀^k (degrees 0,2,4 zeros, degrees 1,3 poles). -/
-def zetaOrder (c : Fin 5 → ℕ) : ℤ := ∑ k : Fin 5, (-1 : ℤ) ^ (k : ℕ) * (c k : ℤ)
 
 /-- With c₀ = c₄ = 0 (DGRS Lemma 7.4 + ⋆) and c₃ = c₁ (⋆): m = c₂ − 2c₁. -/
 theorem zetaOrder_eq (c : Fin 5 → ℕ) (h0 : c 0 = 0) (h4 : c 4 = 0) (h31 : c 3 = c 1) :

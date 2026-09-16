@@ -1,0 +1,281 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/mathlib-initiative/formalization.yaml/main/schema/formalization.schema.json
+#
+# 9/16: license, DOI, name and review status decided by the author; remaining TODO: none in this file.
+version: "v0.4"
+
+project:
+  name: "Resonance-cluster analysis for a proposed counterexample to Fried's conjecture"
+  description: >-
+    A Lean 4 / Mathlib formalization of ONE theorem,
+    FriedCrossing.fried_counterexample_of_resolvent_inputs, the machine-checked reduction behind a
+    proposed codimension-one failure of Fried's identity ζ(0) = τ_R for acyclic characters on a closed
+    hyperbolic 3-manifold with b₁ = 1.
+    THE MECHANISM. Near (g_hyp, ρ_triv), along the conformal family g_τ = e^{−2τb}g_hyp with characters
+    χ_θ, the Ruelle resonances near 0 form two small clusters: a rank-2 cluster in degree 1, encoded by
+    a 2×2 matrix M(θ,τ), and a rank-4 cluster in degree 2, encoded by a 4×4 matrix A(θ,τ). A branch is
+    one eigenvalue of a cluster matrix followed continuously in (θ,τ). Degree 1 has the closed branch
+    and the twin s_nc(θ,τ), which starts at the double point s*(θ) < 0 and travels at rate r₀ > 0
+    towards 0. Degree 2 has the two locked branches (the same eigenvalues, lifted by d₀) and two pure
+    branches, the roots of Q = X² − e₁X + e₂; the pure branch nearest 0 is z(θ,τ). At the crossing
+    metric τ = σ(θ) the twin and z reach 0 together, the twin as a pole of ζ and z as a zero, so ζ stays
+    regular at 0 and ζ(0; g_σ) = τ_R · (rate of the twin)/(rate of z). The twin's rate is at most 2r₀
+    and z's exceeds 2r₀, so ζ(0; g_σ) ≠ τ_R. Fried's identity would need the two branches to arrive at
+    the same speed. The whole Lean argument is bookkeeping of these four branches.
+    WHAT IS PROVED. The theorem is a conditional reduction. Its objects are two abstract resolvent
+    families on Banach scales (structure fields = the cited facts: local uniform boundedness and
+    two-sided inversion of the generator modulo inclusions, CDDP Lemma 4.3; smooth generator), complex
+    structures, and nondegenerate frames; the cluster matrices M, A are DEFINED from them as real parts
+    of the frame matrices A(p)⁻¹B(p) built from contour integrals of matrix elements of the resolvent.
+    Its hypotheses are, in six groups, the properties of that data which the argument uses, each cited:
+    (1) two independent states at s*(θ) in the degree-1 cluster at τ = 0, with s*(0) = 0, s* continuous,
+    s*(θ) < 0 for θ ≠ 0 [DGRS (7.6), BuOl Cor 5.1, DFG Thm 2; independence = rederivation A2 of the
+    informal account]; (2) the first-variation formula B·∂_τM(0,0) = diag(0,p) with r₀ = B_cc p/det B > 0
+    [CDDP (4.22), (1.3)]; (3) the degree-2 cluster at τ = 0 has spectrum {s*, s*, s*, −s*} [DGRS (7.6),
+    k = 2]; (4) at θ = 0 the degree-1 cluster is singular and the degree-2 cluster has spectrum
+    {0, 0, 0, tr M} [CDDP Cor 4.1, DGRS Lemma 7.1]; (5) every eigenvalue of M is an eigenvalue of A
+    [DGRS Lemma 7.1]; (6) for any functions ζ₀, F, any τ_R ≠ 0 and dimension vector c: ζ₀ = F·z/s_nc
+    off the crossing with F continuous and ζ₀(σ) = F(σ) at it [CD (6.5) at λ = 0], ζ₀ = τ_R wherever
+    s_nc ≠ 0 [DGRS Thm 2 + Fried 1986], exactness of C₀¹ → C₀² → V₃ at each crossing [DR Thm 2.1],
+    c₀ = c₄ = 0 and c₃ = c₁ [DGRS Lemmas 7.4, 7.2], c_k the dimensions. The conclusion: there are
+    θ₀, δ > 0 such that for 0 < |θ| < θ₀ the twin crosses 0 at exactly one σ ∈ (0, 2|s*|/r₀], the ζ-order
+    at 0 is zero, the zero branch has slope ∂_τe₂/e₁ of modulus > 2r₀, |e₁(θ,σ)| ≤ K₁|θ|σ, and
+    ζ₀(σ) = τ_R · (pole rate)/(zero rate) ≠ τ_R, with the torsion identity of the zero cluster.
+    WHAT IS NOT PROVED. The identification of the abstract data with the geometry — that the resolvent
+    families are those of the twisted deformed generator L_X + iθω(X) on the anisotropic spaces of g_τ,
+    that ζ₀(τ) is the Ruelle zeta function of g_τ at 0, that τ_R is the Reidemeister torsion of χ_θ,
+    and that the defined matrices are the cluster matrices (their imaginary parts vanish) — is the
+    informal layer, taken from the cited papers and the accompanying note, and is not formalized.
+    Nothing about manifolds, flows, anisotropic spaces or zeta functions is in Lean. Granting the six
+    groups as cited, the theorem exhibits a counterexample to Fried's identity in the form stated by
+    DGRS for acyclic unitary representations, at a non-generic metric where ζ is regular at 0 and
+    zero-resonant states exist with cancelling multiplicities; the refined identity of CD Thm 4 holds
+    there. Whether the six groups hold as cited has not been independently verified by a mathematician
+    other than the author.
+  authors:
+    - "Benjamin Lawton"
+  license: "Apache-2.0"
+  responsible_maintainers:
+    - "Benjamin Lawton"
+
+classification:
+  arxiv: [math.DS, math.SP]
+  msc2020: ["37C30", "37D20", "58J52", "57Q10"]
+
+status:
+  scope: >-
+    One compared declaration, FriedCrossing.fried_counterexample_of_resolvent_inputs, proved in
+    B1s/fried_counterexample_main.lean from the leg files fried_crossing_9_03, fried_crossing_rate_9_07,
+    fried_crossing_firstvariation_9_08, fried_crossing_purezeros_9_08, fried_cluster_matrices_9_10,
+    resolvent_scale_9_11, cluster_from_resolvent_9_11, with every definition in its statement collected
+    in B1s/fried_statement_defs_9_14.lean, which Challenge.lean reproduces verbatim. The theorem is
+    conditional: its sixteen binders are the cited facts listed in the description and in the docstrings
+    of Challenge.lean, and the geometric identification of its objects is not formalized. The repository
+    also contains an earlier form of the same theorem, fried_counterexample_of_inputs, in which the joint
+    C³ regularity of the cluster matrices is a hypothesis rather than derived from the resolvent
+    families; it is not compared. The repository's other files (b1_spectral_skeleton_8_12, bridge_8_20,
+    endpoints_8_20, the route_ii files, h_mixing_equivalence_8_31, fried_capstone_8_31,
+    object_matching_s1_8_15) belong to a separate conditional programme (a uniform twisted kinetic gap
+    ⇒ Fried) and are not part of this submission; b1_spectral_skeleton_8_12 declares quarantined
+    `axiom`s, none of which is reachable from the compared declaration or from any file in its import
+    chain.
+  sorry_count: 0
+  sorry_in_definitions: 0
+  axioms: ["propext", "Classical.choice", "Quot.sound"]
+  main_results:
+    - declaration: "FriedCrossing.fried_counterexample_of_resolvent_inputs"
+      file: "B1s/fried_counterexample_main.lean"
+      sorry_count: 0
+      axioms: ["propext", "Classical.choice", "Quot.sound"]
+      comparator_config: "comparator.json"
+      literature_dependencies: []
+
+fidelity:
+  divergences: >-
+    The formal theorem is universally quantified over abstract data satisfying the sixteen hypotheses;
+    the informal claim is existential (a manifold, a character family and a metric at which
+    ζ(0; g_σ) ≠ τ_R). The gap between them is exactly the geometric identification, which is not
+    formalized: nothing in Lean asserts that data satisfying all sixteen binders exist, and the binder
+    docstrings are where each fact is attributed to its source. Specific points. (i) M and A are defined
+    as REAL PARTS of the complex frame matrices A(p)⁻¹B(p); that the imaginary parts vanish (conjugation
+    symmetry of the cluster) is interpretive and not consumed by the proof. (ii) The frames are assumed
+    nondegenerate (hdet₁, hdet₂: det A(p) ≠ 0 for all p); informally this is the choice of a dual frame
+    at (0,0) with the parameters retracted into the region where it stays invertible. (iii) The
+    resolvent families are stated globally in the parameter (θ,τ,λ) ∈ (ℝ×ℝ)×ℂ; informally they are the
+    pull-backs by smooth retractions of (θ,τ) into a neighbourhood of (0,0) and of λ into an annulus
+    around the fixed contour where the resolvent exists (CDDP §4.2). (iv) hstates (two linearly
+    independent states at s*(θ)) is derived in the accompanying note from DGRS (7.6) and a Liouville
+    argument on S², not read verbatim from a paper; it is the only hypothesis with that status.
+    (v) The degree-3 space V₃ is abstract: only its dimension enters (rank–nullity), and no degree-3
+    cluster matrix is in the ledger; C₀¹ and C₀² are the generalized 0-eigenspaces of M and A, whose
+    dimensions are the algebraic multiplicities of 0 by Mathlib's finrank_maxGenEigenspace_eq.
+    (vi) Every HasDerivAt / ContDiff hypothesis is stated globally on ℝ or ℝ×ℝ rather than on a ball, as
+    a C^k function on a ball restricted to a smaller closed ball extends to the plane. (vii) The
+    conclusion's torsion identity is stated for the explicit 2×2 / 3×3 matrices of the (x,l)-cluster
+    complex (Chaubet–Dang Def 3.2 in the normalisation of the note's Lemma A), not for an abstract
+    chain complex.
+
+sources:
+  - title: "A codimension-one failure of Fried's identity for acyclic characters on nearly hyperbolic 3-manifolds"
+    authors: ["Benjamin Lawton"]
+    type: original-proof
+    location: "Zenodo, restricted deposit of 2026-09-08, version 0.1, https://doi.org/10.5281/zenodo.22650834; figures companion docs/counterexample_intuitive_view.pdf (source .tex alongside) in this repository"
+    relationship: other
+    author_endorsement: participated
+    note: >-
+      The informal account. Its figures companion, docs/counterexample_intuitive_view.pdf, draws the
+      mechanism (the two dials θ and τ, the twin, the unequal arrival speeds, the jump in ζ(0)) in the
+      branch vocabulary of Challenge.lean and is readable without the restricted deposit. It states the theorem, the five analytic inputs with their scope and
+      status, the Lean ledger, and an AI-use disclosure; it derives hstates (independence of d₀f and
+      I·d₀f) and Lemma A (zero-cluster torsion = limit ratio of arriving zeros and poles). Deposited
+      with restricted access pending independent expert reading of the analytic inputs. The deposited
+      version 0.1 predates the 9/10–9/14 restructuring of the Lean ledger (cluster matrices as primitives,
+      input (B) derived from the resolvent families, hsemisimple replaced by hstates); its theorem and
+      mechanism are those formalized here, its input list is the earlier five-input form. The figures
+      companion in docs/ is current. Novelty of the
+      counterexample is not established; the author makes no priority claim beyond the deposit
+      timestamp.
+  - title: "The Ruelle zeta function at zero for nearly hyperbolic 3-manifolds"
+    authors: ["Mihajlo Cekić", "Benjamin Delarue", "Semyon Dyatlov", "Gabriel P. Paternain"]
+    type: paper
+    location: "arXiv:2009.08558"
+    relationship: background
+    author_endorsement: not-contacted
+    note: >-
+      Source of hypotheses (2) [Lemma 2.2, Lemma 2.10, (4.22) with (4.38), (1.3)], (4) [Cor 4.1 via
+      Thm 1(2)], and of the ResolventFamily fields bdd, inv_left, inv_right [Lemma 4.3] and the fixed
+      resonance-free contour [§4.2]. Nothing from it is proved in Lean.
+  - title: "The Fried conjecture in small dimensions"
+    authors: ["Nguyen Viet Dang", "Colin Guillarmou", "Gabriel Rivière", "Shu Shen"]
+    type: paper
+    location: "arXiv:1807.01189"
+    relationship: background
+    author_endorsement: not-contacted
+    note: >-
+      Source of hypotheses (1) [(7.6) as a meromorphic identity, Prop 7.7], (3) [(7.6) with k = 2],
+      (4) and (5) [Lemma 7.1], hfried_off [Thm 2, local constancy of ζ(0)], hacyc [Lemma 7.4],
+      hdual [Lemma 7.2]; and the formulation of Fried's conjecture that the conclusion contradicts.
+  - title: "Dynamical torsion for contact Anosov flows"
+    authors: ["Yann Chaubet", "Nguyen Viet Dang"]
+    type: paper
+    location: "arXiv:1911.09931"
+    relationship: background
+    author_endorsement: not-contacted
+    note: >-
+      Source of hfactor [(6.5) read at λ = 0 along the family], of the torsion normalisation
+      [Def 3.2] behind refinedTorsion, and of the refined identity (Thm 4) that holds at the crossing.
+  - title: "Topology of Pollicott–Ruelle resonant states"
+    authors: ["Nguyen Viet Dang", "Gabriel Rivière"]
+    type: paper
+    location: "arXiv:1703.08037"
+    relationship: background
+    author_endorsement: not-contacted
+    note: "Source of hexact (Thm 2.1): exactness of the reduced resonant complex at a crossing."
+  - title: "Selberg Zeta and Theta Functions"
+    authors: ["Ulrich Bunke", "Martin Olbrich"]
+    type: book
+    location: "Mathematical Research 83, Akademie Verlag, Berlin, 1995; Cor 5.1, Prop 5.6, Thm 3.15"
+    relationship: background
+    author_endorsement: "n/a"
+    note: "Locations of the scalar Selberg zeros entering hdouble and hmirror through DGRS (7.6)."
+  - title: "Power spectrum of the geodesic flow on hyperbolic manifolds"
+    authors: ["Semyon Dyatlov", "Frédéric Faure", "Colin Guillarmou"]
+    type: paper
+    location: "arXiv:1403.0256"
+    relationship: background
+    author_endorsement: not-contacted
+    note: "Thm 2: cross-check of the double point s*(θ) in hdouble."
+  - title: "Analytic torsion and closed geodesics on hyperbolic manifolds"
+    authors: ["David Fried"]
+    type: paper
+    location: "Invent. Math. 84 (1986)"
+    relationship: background
+    author_endorsement: "n/a"
+    note: "Fried's identity at g_hyp: τ_R(χ_θ) ≠ 0 (hτR) and ζ(0; g_hyp) = τ_R, the base point of hfried_off."
+
+automation:
+  methods:
+    - method: agent
+      models: ["claude-fable-5-1"]
+      framework: "Claude Code"
+      role: >-
+        The formalization: the Lean text of the leg files, the statement file, the statement-definitions
+        module, Challenge.lean (generated by scripts/make_challenge.py), Solution.lean and this metadata
+        draft; Mathlib search and tactic development; the #print axioms audits; the local comparator
+        runs. Also the literature extraction, derivation, adversarial checking and blind re-derivation
+        described in the informal account's disclosure, and its drafting. Directed turn by turn by the
+        author, who chose the targets, fixed the ledger discipline (one binder per cited fact, no
+        axioms, built-ins only) and selected what to keep.
+    - method: manual
+      models: []
+      role: >-
+        Direction, selection and responsibility. Benjamin Lawton chose the problem and the reduction's
+        shape, read the cited papers against the ledger rows, decided every change to the hypothesis
+        list, and releases the repository. He takes responsibility for the mathematics.
+  spend_usd: "subscription-based Claude Code usage; per-project spend not recorded separately"
+  notes: >-
+    Mechanical checks run locally before submission: lake build of the whole suite; #print axioms on
+    the compared declaration ([propext, Classical.choice, Quot.sound]); leanprover/comparator (tag
+    v4.33.0) on comparator.json with Challenge.lean generated from B1s/fried_statement_defs_9_14.lean.
+    The statement's definitions are kept in one module because comparator compares definitions by
+    value and Lean's per-module cache of lifted auxiliary proofs (numerals ⇒ Nat.AtLeastTwo instances)
+    otherwise gives the same definition different auxiliary constants in the two environments.
+    scripts/ledger_check.py checks that the README's ledger table and the theorem's binders are in
+    one-to-one correspondence.
+
+review:
+  status: agent-reviewed
+  notes: >-
+    No independent human mathematician has reviewed the development or the informal account. The
+    author has read the cited papers against each ledger row (the [V]/[D]/[def] status column of the
+    README) but has not independently verified informal-to-formal fidelity beyond that. Model-side
+    checks: the construction was attacked along five lines by a second model instance and re-derived
+    from the cited texts by a third with no access to the earlier derivations, and the three agree
+    (informal account, Disclosure). What is established mechanically: the compared declaration is proved
+    from the three standard axioms, and comparator matches it constant by constant against Challenge.lean.
+
+limitations:
+  - >-
+    The theorem is a reduction. Its hypotheses are the cited facts; that the geodesic-flow data satisfy
+    them at once is not formalized and not independently verified. If the hypotheses were jointly
+    unsatisfiable the theorem would still hold and would say nothing about Fried's conjecture.
+  - >-
+    Only hstates is derived rather than read verbatim from a source (independence of d₀f and I·d₀f at
+    s*(θ), a Liouville argument on S² in the informal account). The frame nondegeneracy hdet₁, hdet₂ and
+    the global-parameter statement of the resolvent families are choices, described in fidelity.
+  - >-
+    The counterexample is to Fried's identity at a codimension-one, non-generic metric where
+    zero-resonant states exist with cancelling multiplicities, so ζ is regular at 0. The refined
+    identity of Chaubet–Dang Thm 4 holds there; readers who reserve "Fried's conjecture" for the
+    resonance-free case will read the result as an instance of that refined identity rather than as a
+    counterexample.
+  - >-
+    The repository proves more than is compared (the uncompared fried_counterexample_of_inputs, the
+    per-leg theorems, and the separate kinetic-gap programme in the other files). One file of that
+    programme, b1_spectral_skeleton_8_12, declares quarantined axioms; nothing compared reaches them.
+  - >-
+    Novelty is unknown. No systematic prior-art search has been run beyond the cited literature; the
+    author makes no priority claim beyond the restricted Zenodo deposit.
+
+alignment:
+  namespace: "FriedCrossing"
+  statements:
+    - source: "Main theorem of the informal account (one theorem, five inputs): ζ(0; g_σ) = τ_R·(pole rate)/(zero rate) ≠ τ_R at the crossing"
+      lean: "FriedCrossing.fried_counterexample_of_resolvent_inputs"
+      module: "Challenge (statement), Solution / B1s.fried_counterexample_main (proof)"
+      status: proved
+      note: "Conditional on the sixteen binders; conclusion includes uniqueness of σ, ζ-order 0, the slope bound, and the Lemma A torsion identity."
+    - source: "Input (B), joint C³ regularity of the cluster matrices"
+      lean: "FriedCrossing.ClusterFrame.clusterC3_of_resolvent"
+      module: "B1s.cluster_from_resolvent_9_11 (not compared)"
+      status: proved
+      note: "Derived from the resolvent-family fields via C^k-with-loss on the scale (resolvent_scale_9_11) and a parametric interval integral; this is why the compared theorem has no regularity hypothesis."
+    - source: "The cluster matrices M (2×2) and A (4×4), the twin, the pure-zero branch, the zero clusters C₀¹, C₀²"
+      lean: "FriedCrossing.ClusterFrame.Mreal, TwinRate.twin, Branch.zBranch, Derived.resZero₁, Derived.resZero₂"
+      module: "Challenge (definitions), B1s.fried_statement_defs_9_14 (development)"
+      status: proved
+      note: "Definitions; see fidelity (i)–(v)."
+    - source: "Lemma A (zero-cluster torsion) and CD Def 3.2 normalisation"
+      lean: "FriedCrossing.TorsionCore.refinedTorsion, OrderCount.zetaOrder"
+      module: "Challenge (definitions), B1s.fried_statement_defs_9_14"
+      status: proved
+      note: "Explicit-matrix torsion of the (x,l)-cluster complex; the identity appears in the conclusion."

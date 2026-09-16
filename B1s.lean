@@ -1,4 +1,5 @@
 import B1s.Basic
+import B1s.fried_statement_defs_9_14
 import B1s.b1_spectral_skeleton_8_12
 import B1s.object_matching_s1_8_15
 import B1s.bridge_8_20
@@ -12,4 +13,7 @@ import B1s.fried_crossing_9_03
 import B1s.fried_crossing_rate_9_07
 import B1s.fried_crossing_firstvariation_9_08
 import B1s.fried_crossing_purezeros_9_08
+import B1s.fried_cluster_matrices_9_10
+import B1s.resolvent_scale_9_11
+import B1s.cluster_from_resolvent_9_11
 import B1s.fried_counterexample_main

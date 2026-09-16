@@ -57,15 +57,6 @@ open Filter Topology
 /-! ## §1 The rank-2 cluster: eigenvalues as s* + τ·(roots of w² − a w + b) -/
 namespace TwinRate
 
-/-- Discriminant of w² − a·w + b. -/
-def disc (a b : ℝ) : ℝ := a ^ 2 - 4 * b
-
-/-- The root of w² − a·w + b that sits at r₀ when (a, b) = (r₀, 0), r₀ > 0. -/
-noncomputable def wPlus (a b : ℝ) : ℝ := (a + Real.sqrt (disc a b)) / 2
-
-/-- The other root (at 0 when (a, b) = (r₀, 0)): the closed state's first-order rate. -/
-noncomputable def wMinus (a b : ℝ) : ℝ := (a - Real.sqrt (disc a b)) / 2
-
 theorem wPlus_add_wMinus (a b : ℝ) : wPlus a b + wMinus a b = a := by
   unfold wPlus wMinus; ring
 
@@ -139,19 +130,8 @@ theorem branches_ne {sStar τ a b : ℝ} (hτ : τ ≠ 0) (h : 0 < disc a b) :
 
 /-! ## §2 The twin branch and its τ-derivative -/
 
-/-- The twin branch s_nc(θ,τ) = s*(θ) + τ·w₊(a(θ,τ), b(θ,τ)). -/
-noncomputable def twin (sStar : ℝ → ℝ) (a b : ℝ → ℝ → ℝ) (θ τ : ℝ) : ℝ :=
-  sStar θ + τ * wPlus (a θ τ) (b θ τ)
-
 theorem twin_zero (sStar : ℝ → ℝ) (a b : ℝ → ℝ → ℝ) (θ : ℝ) : twin sStar a b θ 0 = sStar θ := by
   simp [twin]
-
-/-- ∂w₊/∂τ given a' = ∂_τa, b' = ∂_τb, where the discriminant is positive. -/
-noncomputable def dwPlus (a b a' b' : ℝ) : ℝ :=
-  (a' + (2 * a * a' - 4 * b') / (2 * Real.sqrt (disc a b))) / 2
-
-/-- ∂_τ(twin) = w₊ + τ·∂_τw₊. -/
-noncomputable def dtwin (a b a' b' τ : ℝ) : ℝ := wPlus a b + τ * dwPlus a b a' b'
 
 theorem hasDerivAt_disc {A B : ℝ → ℝ} {a' b' τ : ℝ} (hA : HasDerivAt A a' τ)
     (hB : HasDerivAt B b' τ) :

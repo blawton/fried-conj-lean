@@ -44,13 +44,6 @@ namespace FirstVariation
 
 variable {K : Type*} [Field K]
 
-/-- The pairing B(u, u*) = ∫α∧dα∧u∧u* on Res¹₀ × Res¹₀* in the bases (c, ψ), (c*, ψ*). -/
-def Bmat (Bcc Bcψ Bψc Bψψ : K) : Matrix (Fin 2) (Fin 2) K := !![Bcc, Bcψ; Bψc, Bψψ]
-
-/-- CDDP (4.22): the matrix of ∂_τZ(0) in the pairing; the c-row and c-column vanish (dc = 0),
-p = −i⟨⟨(ι_Xβ)dψ, dψ*⟩⟩ up to the convention factor. -/
-def Pmat (p : K) : Matrix (Fin 2) (Fin 2) K := !![0, 0; 0, p]
-
 /-- The numerator matrix of N = B⁻¹P: adjugate(B)·P. -/
 def Nmat0 (Bcc Bcψ p : K) : Matrix (Fin 2) (Fin 2) K := !![0, -(Bcψ * p); 0, Bcc * p]
 
@@ -144,11 +137,6 @@ end FirstVariation
 
 /-! ## §2 Hadamard: from M(θ,0) = s*·1 to M = s*·1 + τ·N with N continuous at (0,0) -/
 namespace Hadamard
-
-/-- The τ-divided matrix: N(θ,τ) = (M(θ,τ) − s*(θ)·1)/τ for τ ≠ 0, ∂_τM(θ,0) at τ = 0. -/
-noncomputable def Ndiv (M M' : ℝ → ℝ → Matrix (Fin 2) (Fin 2) ℝ) (sStar : ℝ → ℝ)
-    (θ τ : ℝ) : Matrix (Fin 2) (Fin 2) ℝ :=
-  if τ = 0 then M' θ 0 else (1 / τ) • (M θ τ - sStar θ • (1 : Matrix (Fin 2) (Fin 2) ℝ))
 
 theorem Ndiv_zero (M M' : ℝ → ℝ → Matrix (Fin 2) (Fin 2) ℝ) (sStar : ℝ → ℝ) (θ : ℝ) :
     Ndiv M M' sStar θ 0 = M' θ 0 := by simp [Ndiv]

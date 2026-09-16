@@ -16,3 +16,11 @@ rev = "v4.33.0"
 
 [[lean_lib]]
 name = "B1s"
+
+# Palomar submission surface (9/14): the Mathlib-only statement of record and the re-export of
+# the development that proves it. See Challenge.lean, Solution.lean, comparator.json.
+[[lean_lib]]
+name = "Challenge"
+
+[[lean_lib]]
+name = "Solution"
