@@ -28,6 +28,9 @@ every theorem below (P1–P5) lists only Lean built-ins.
   P4 RateRatio    — z ~ a(τ−σ), p ~ b(τ−σ) ⇒ z/p → a/b; if R·z/p ≡ τ_R off σ and R is
                     continuous at σ then R(σ) = τ_R·(b/a), ≠ τ_R iff a ≠ b.
   P5 Capstone     — `fried_fails_at_crossing_of_inputs` composes P1–P4 from the named
+  [9/16: this capstone, `Crossing.crossing_exists_unique` and `RateRatio.crossing_value` were REMOVED for the
+  Palomar entry as superseded; the compared theorem is `fried_counterexample_of_resolvent_inputs`
+  (fried_counterexample_main), which uses the `_local` forms below.]
                     analytic inputs (hdouble, hsym, hrate_nonclosed, hrate_zero, hcont,
                     hfried_off, hexact, hacyc, hdual; bookkeeping hdims, hτR).
 -/
@@ -169,29 +172,6 @@ end OrderCount
 /-! ## §3 (P3) Crossing existence (IVT + monotonicity; the IFT step of memo A5) -/
 namespace Crossing
 
-/-- A C¹ real branch with s(0) < 0 and ∂_τ s ≥ r₀ > 0 crosses 0 exactly once, at some
-σ ∈ (0, |s(0)|/r₀]. -/
-theorem crossing_exists_unique {s ds : ℝ → ℝ} {r₀ : ℝ} (hr₀ : 0 < r₀)
-    (hderiv : ∀ τ, HasDerivAt s (ds τ) τ) (hlow : ∀ τ, r₀ ≤ ds τ) (hs0 : s 0 < 0) :
-    ∃ σ, 0 < σ ∧ σ ≤ |s 0| / r₀ ∧ s σ = 0 ∧ ∀ τ, s τ = 0 → τ = σ := by
-  have hdiff : Differentiable ℝ s := fun τ => (hderiv τ).differentiableAt
-  have hderiv' : ∀ τ, deriv s τ = ds τ := fun τ => (hderiv τ).deriv
-  have hmono : StrictMono s := strictMono_of_deriv_pos fun τ => by
-    rw [hderiv']; exact lt_of_lt_of_le hr₀ (hlow τ)
-  set T := -s 0 / r₀ with hT
-  have hTpos : 0 < T := div_pos (neg_pos.mpr hs0) hr₀
-  have hgrow : r₀ * (T - 0) ≤ s T - s 0 :=
-    mul_sub_le_image_sub_of_le_deriv hdiff (fun τ => by rw [hderiv']; exact hlow τ) hTpos.le
-  have hrT : r₀ * T = -s 0 := by
-    rw [hT, mul_div_cancel₀ _ hr₀.ne']
-  have hsT : 0 ≤ s T := by linarith
-  obtain ⟨σ, hσmem, hσ⟩ : (0 : ℝ) ∈ s '' Set.Icc 0 T :=
-    intermediate_value_Icc hTpos.le hdiff.continuous.continuousOn ⟨hs0.le, hsT⟩
-  refine ⟨σ, ?_, ?_, hσ, ?_⟩
-  · exact hmono.lt_iff_lt.mp (by rw [hσ]; exact hs0)
-  · rw [abs_of_neg hs0]; exact hσmem.2
-  · intro τ hτ; exact hmono.injective (hτ.trans hσ.symm)
-
 end Crossing
 
 /-! ## §4 (P4) Rate-ratio bookkeeping (memo crossing_rate_ratio_9_03 §1, §3) -/
@@ -236,23 +216,6 @@ theorem eventually_ne_zero_of_linearArrival {f : ℝ → ℝ} {c σ : ℝ}
     (hf : LinearArrival f c σ) (hc : c ≠ 0) : ∀ᶠ τ in 𝓝[≠] σ, f τ ≠ 0 :=
   (hf.eventually_ne hc).mono fun τ hτ h0 => hτ (by rw [h0, zero_div])
 
-/-- THE VALUE AT THE CROSSING. If ζ(0; g_τ) = R(τ)·z(τ)/p(τ) equals τ_R for every
-τ ≠ σ and the regular factor R is continuous at σ, then R(σ) = τ_R·(b/a): the
-meromorphic value at the crossing is τ_R times the limiting pole/zero rate ratio. -/
-theorem crossing_value {z p R : ℝ → ℝ} {a b σ τR : ℝ}
-    (hz : LinearArrival z a σ) (hp : LinearArrival p b σ) (ha : a ≠ 0) (hb : b ≠ 0)
-    (hoff : ∀ τ, τ ≠ σ → R τ * z τ / p τ = τR) (hR : ContinuousAt R σ) :
-    R σ = τR * (b / a) := by
-  have hpz := ratio_tendsto hp hz ha
-  have hlim : Tendsto R (𝓝[≠] σ) (𝓝 (τR * (b / a))) := by
-    refine (hpz.const_mul τR).congr' ?_
-    filter_upwards [eventually_ne_nhdsNE σ, eventually_ne_zero_of_linearArrival hz ha,
-      eventually_ne_zero_of_linearArrival hp hb] with τ hτ hzτ hpτ
-    have h := hoff τ hτ
-    rw [← h]
-    field_simp
-  exact tendsto_nhds_unique (hR.tendsto.mono_left nhdsWithin_le_nhds) hlim
-
 /-- The crossing value differs from τ_R exactly when the rates are unbalanced. -/
 theorem crossing_value_ne_iff {τR a b : ℝ} (hτR : τR ≠ 0) (ha : a ≠ 0) :
     τR * (b / a) ≠ τR ↔ b ≠ a := by
@@ -278,91 +241,6 @@ at the crossing, `τR` = τ_R(χ_θ). -/
 namespace Capstone
 
 open TorsionCore OrderCount Crossing RateRatio
-
-/-- FRIED FAILS AT THE CROSSING METRIC, from the input ledger.
-
-Hypotheses (source verbatim in the memos):
-* `hτR` — τ_R(χ_θ) ≠ 0 (Reidemeister torsion of an acyclic representation).
-* `hdouble` — at g_hyp the non-closed branch sits at the doubled real degree-1 resonance
-  s*(θ) = −1 + √(1−μ₀(θ)) < 0: DGRS Prop 7.6 (7.6)/(7.7), factor Z_{S,σ₀}(λ+2)² ⇒
-  multiplicity 2, + DFG Thm 2 (location/reality) — memo A1–A2.
-* `hsym` — s ↦ s̄ symmetry (adjoint ∘ time reversal J) keeps the simple branch REAL
-  along the real family — memo A3.
-* `hrate_nonclosed` — CDDP (4.22)/(4.38) first variation of the non-closed state,
-  r₀ ≠ 0 for b in CDDP's open dense set (Thm 1(2)); sign normalised so the branch
-  moves toward 0, bound taken uniform on the τ-range used — memo A4–A5.
-* `hrate_zero` — at a crossing the pure degree-2 zero arrives linearly with slope
-  a ≠ 0 UNEQUAL to the pole's slope: CDDP Cor 4.1 (m_{2,0}(0) = b₁ + 2 at θ = 0, the
-  pole leaves 0 alone) + the ±s* mirror at g_hyp ⇒ e₁(θ,σ) = O(θ⁴) while |s*| = Θ(θ²),
-  so a/b = |s*|/e₁ ≠ 1 — crossing_rate_ratio_9_03 §2.2–§3.
-* `hcont` — the regular factor F(0,·) of CD (6.5) is continuous at the crossing
-  (continuity of resonances / analytic Riesz projector, CD Thm 4/5 setting).
-* `hfried_off` — off the crossing 0 ∉ Res and ζ(0; g_τ) = R(τ)·z(τ)/s_nc(τ) = τ_R:
-  DGRS Thm 2 local constancy + Fried/Shen at g_hyp — memo A6, rate-ratio §1.
-* `hexact` — the reduced resonant complex (C₀•(0), d₀) at the crossing is exact:
-  Dang–Rivière exactness of (C•, d∇) (DGRS (7.1)) in the generic c₂ = 2 case
-  (rate-ratio §2.4; the degenerate 3-chain c₂ = 3 gives m = +1 and fails Fried too).
-* `hacyc` — c₀ = c₄ = 0: DGRS Lemma 7.4 (+ ⋆) for acyclic unitary ρ.
-* `hdual` — c₃ = c₁: ⋆-duality, DGRS Lemma 7.2.
-* `hdims` — bookkeeping: c_k = dim C₀^k for k = 1, 2, 3.
-
-Conclusion: a unique crossing σ ∈ (0, |s*|/r₀]; ζ is regular at 0 there (order 0);
-the pole/zero rate ratio exists, ≠ 1; ζ(0; g_σ) = R(σ) = τ_R · ratio ≠ τ_R; and the
-refined torsion of the limiting J₂ cluster is −(zero rate)/(pole rate) (Lemma A). -/
-theorem fried_fails_at_crossing_of_inputs
-    {K : Type*} [Field K] {V₁ V₂ V₃ : Type*}
-    [AddCommGroup V₁] [Module K V₁] [FiniteDimensional K V₁]
-    [AddCommGroup V₂] [Module K V₂] [FiniteDimensional K V₂]
-    [AddCommGroup V₃] [Module K V₃]
-    (S : ℝ → ℝ → ℂ) (ds : ℝ → ℝ → ℝ) (z R : ℝ → ℝ) (c : Fin 5 → ℕ)
-    (θ sStar r₀ τR : ℝ)
-    (hτR : τR ≠ 0)
-    (hdouble : S θ 0 = (sStar : ℂ) ∧ sStar < 0)
-    (hsym : ∀ τ, (S θ τ).im = 0)
-    (hrate_nonclosed : 0 < r₀ ∧
-      ∀ τ, HasDerivAt (fun τ => (S θ τ).re) (ds θ τ) τ ∧ r₀ ≤ ds θ τ)
-    (hrate_zero : ∀ τ₀, S θ τ₀ = 0 → ∃ (a : ℝ) (e : ℝ → ℝ), a ≠ 0 ∧ a ≠ ds θ τ₀ ∧
-      (∀ τ, z τ = a * (τ - τ₀) * (1 + e τ)) ∧ Tendsto e (𝓝[≠] τ₀) (𝓝 0))
-    (hcont : ∀ τ₀, S θ τ₀ = 0 → ContinuousAt R τ₀)
-    (hfried_off : ∀ τ, S θ τ ≠ 0 → R τ * z τ / (S θ τ).re = τR)
-    (hexact : ∃ (f : V₁ →ₗ[K] V₂) (g : V₂ →ₗ[K] V₃), Function.Injective f ∧
-      LinearMap.range f = LinearMap.ker g ∧ Function.Surjective g)
-    (hacyc : c 0 = 0 ∧ c 4 = 0) (hdual : c 3 = c 1)
-    (hdims : c 1 = Module.finrank K V₁ ∧ c 2 = Module.finrank K V₂ ∧
-      c 3 = Module.finrank K V₃) :
-    ∃ σ, 0 < σ ∧ σ ≤ |sStar| / r₀ ∧ S θ σ = 0 ∧ (∀ τ, S θ τ = 0 → τ = σ) ∧
-      zetaOrder c = 0 ∧
-      ∃ a ratio : ℝ, a ≠ 0 ∧ ds θ σ ≠ 0 ∧
-        Tendsto (fun τ => (S θ τ).re / z τ) (𝓝[≠] σ) (𝓝 ratio) ∧
-        ratio = ds θ σ / a ∧ ratio ≠ 1 ∧ R σ = τR * ratio ∧ R σ ≠ τR ∧
-        refinedTorsion 1 (ds θ σ / (a - ds θ σ)) = -(a / ds θ σ) := by
-  obtain ⟨hr₀, hrate⟩ := hrate_nonclosed
-  -- the real branch s_nc(θ, ·)
-  have hs0' : (S θ 0).re = sStar := by rw [hdouble.1, Complex.ofReal_re]
-  have hs0 : (S θ 0).re < 0 := by rw [hs0']; exact hdouble.2
-  -- P3: the crossing
-  obtain ⟨σ, hσpos, hσle, hσ0, huniq⟩ :=
-    crossing_exists_unique hr₀ (fun τ => (hrate τ).1) (fun τ => (hrate τ).2) hs0
-  have hSσ : S θ σ = 0 := Complex.ext (by simpa using hσ0) (by simpa using hsym σ)
-  have hcross : ∀ τ, S θ τ = 0 → τ = σ := fun τ h => huniq τ (by rw [h, Complex.zero_re])
-  have hoff : ∀ τ, τ ≠ σ → S θ τ ≠ 0 := fun τ hτ h => hτ (hcross τ h)
-  -- P4: rates and value
-  obtain ⟨a, e, ha, hab, hz, he⟩ := hrate_zero σ hSσ
-  have hzA : LinearArrival z a σ := linearArrival_of_one_add_o hz he
-  have hpA : LinearArrival (fun τ => (S θ τ).re) (ds θ σ) σ :=
-    linearArrival_of_hasDerivAt (hrate σ).1 hσ0
-  have hb : ds θ σ ≠ 0 := (lt_of_lt_of_le hr₀ (hrate σ).2).ne'
-  have hval : R σ = τR * (ds θ σ / a) :=
-    crossing_value hzA hpA ha hb (fun τ hτ => hfried_off τ (hoff τ hτ)) (hcont σ hSσ)
-  have hratio : ds θ σ / a ≠ 1 := fun h1 => hab ((div_eq_one_iff_eq ha).mp h1).symm
-  -- P2: the order
-  obtain ⟨f, g, hf, hfg, hg⟩ := hexact
-  have hord : zetaOrder c = 0 := order_zero_of_exact f g hf hfg hg c hacyc hdual hdims
-  refine ⟨σ, hσpos, by rwa [hs0'] at hσle, hSσ, hcross, hord, a, ds θ σ / a, ha, hb,
-    ratio_tendsto hpA hzA ha, rfl, hratio, hval, ?_, ?_⟩
-  · rw [hval]; exact (crossing_value_ne_iff hτR ha).mpr fun h => hratio (by rw [h, div_self ha])
-  · -- P1: the Lemma A reading of the limiting J₂ cluster
-    exact jordan_torsion_eq_neg_ratio (ds θ σ) a hb hab
 
 end Capstone
 

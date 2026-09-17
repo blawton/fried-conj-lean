@@ -34,6 +34,9 @@ Bookkeeping consequences. The rate bound is r₀/2 (not r₀), so the crossing b
 σ ≤ 2|s*|/r₀ (`crossing_exists_unique_local`); the derivative control is LOCAL in τ, so
 the branch must start within r₀δ/2 of 0 — true for small θ since s*(θ) = Θ(θ²) → 0
 (`fried_fails_at_crossing_of_cluster_inputs` asks for continuity of s* at 0 and delivers
+[9/16: the capstones `fried_fails_at_crossing_local` and `fried_fails_at_crossing_of_cluster_inputs` were REMOVED
+for the Palomar entry as superseded by `fried_counterexample_of_resolvent_inputs`; §6 Saturation and the rate
+lemmas remain and are used.]
 "for all sufficiently small θ ≠ 0"). Off-crossing Fried (`hfried_off`) is only needed on
 |τ| < δ, and the value theorem only needs it eventually near σ (`crossing_value_local`).
 
@@ -321,132 +324,6 @@ end RateRatio
 namespace Capstone
 
 open TorsionCore OrderCount Crossing RateRatio TwinRate
-
-/-- The capstone with a REAL branch `s` and LOCAL rate control (|τ| < δ). Same conclusion
-as `fried_fails_at_crossing_of_inputs`, with the crossing bound 2·|s(0)|/r₀ replaced by
-|s(0)|/r for the local rate bound r. -/
-theorem fried_fails_at_crossing_local
-    {K : Type*} [Field K] {V₁ V₂ V₃ : Type*}
-    [AddCommGroup V₁] [Module K V₁] [FiniteDimensional K V₁]
-    [AddCommGroup V₂] [Module K V₂] [FiniteDimensional K V₂]
-    [AddCommGroup V₃] [Module K V₃]
-    (s ds z R : ℝ → ℝ) (c : Fin 5 → ℕ) (r δ τR : ℝ)
-    (hτR : τR ≠ 0) (hr : 0 < r)
-    (hs0 : s 0 < 0) (hsmall : |s 0| < r * δ)
-    (hrate : ∀ τ, |τ| < δ → HasDerivAt s (ds τ) τ ∧ r ≤ ds τ)
-    (hrate_zero : ∀ τ₀, s τ₀ = 0 → ∃ (a : ℝ) (e : ℝ → ℝ), a ≠ 0 ∧ a ≠ ds τ₀ ∧
-      (∀ τ, z τ = a * (τ - τ₀) * (1 + e τ)) ∧ Tendsto e (𝓝[≠] τ₀) (𝓝 0))
-    (hcont : ∀ τ₀, s τ₀ = 0 → ContinuousAt R τ₀)
-    (hfried_off : ∀ τ, |τ| < δ → s τ ≠ 0 → R τ * z τ / s τ = τR)
-    (hexact : ∃ (f : V₁ →ₗ[K] V₂) (g : V₂ →ₗ[K] V₃), Function.Injective f ∧
-      LinearMap.range f = LinearMap.ker g ∧ Function.Surjective g)
-    (hacyc : c 0 = 0 ∧ c 4 = 0) (hdual : c 3 = c 1)
-    (hdims : c 1 = Module.finrank K V₁ ∧ c 2 = Module.finrank K V₂ ∧
-      c 3 = Module.finrank K V₃) :
-    ∃ σ, 0 < σ ∧ σ ≤ |s 0| / r ∧ σ < δ ∧ s σ = 0 ∧ (∀ τ, |τ| < δ → s τ = 0 → τ = σ) ∧
-      zetaOrder c = 0 ∧
-      ∃ a ratio : ℝ, a ≠ 0 ∧ ds σ ≠ 0 ∧
-        Tendsto (fun τ => s τ / z τ) (𝓝[≠] σ) (𝓝 ratio) ∧
-        ratio = ds σ / a ∧ ratio ≠ 1 ∧ R σ = τR * ratio ∧ R σ ≠ τR ∧
-        refinedTorsion 1 (ds σ / (a - ds σ)) = -(a / ds σ) := by
-  -- P3 (local): the crossing
-  obtain ⟨σ, hσpos, hσle, hσlt, hσ0, huniq⟩ :=
-    crossing_exists_unique_local hr (fun τ hτ => (hrate τ hτ).1)
-      (fun τ hτ => (hrate τ hτ).2) hs0 hsmall
-  have hσabs : |σ| < δ := by rw [abs_lt]; constructor <;> linarith
-  -- off the crossing, near it, s ≠ 0 and Fried holds
-  have hoff : ∀ᶠ τ in 𝓝[≠] σ, R τ * z τ / s τ = τR := by
-    have hnear : ∀ᶠ τ in 𝓝 σ, |τ| < δ :=
-      (continuous_abs.continuousAt (x := σ)).eventually (gt_mem_nhds hσabs)
-    filter_upwards [eventually_ne_nhdsNE σ, nhdsWithin_le_nhds hnear] with τ hτ hτδ
-    exact hfried_off τ hτδ fun h0 => hτ (huniq τ hτδ h0)
-  -- P4: rates and value
-  obtain ⟨a, e, ha, hab, hz, he⟩ := hrate_zero σ hσ0
-  have hzA : LinearArrival z a σ := linearArrival_of_one_add_o hz he
-  have hpA : LinearArrival s (ds σ) σ := linearArrival_of_hasDerivAt (hrate σ hσabs).1 hσ0
-  have hb : ds σ ≠ 0 := (lt_of_lt_of_le hr (hrate σ hσabs).2).ne'
-  have hval : R σ = τR * (ds σ / a) :=
-    crossing_value_local hzA hpA ha hb hoff (hcont σ hσ0)
-  have hratio : ds σ / a ≠ 1 := fun h1 => hab ((div_eq_one_iff_eq ha).mp h1).symm
-  -- P2: the order
-  obtain ⟨f, g, hf, hfg, hg⟩ := hexact
-  have hord : zetaOrder c = 0 := order_zero_of_exact f g hf hfg hg c hacyc hdual hdims
-  refine ⟨σ, hσpos, hσle, hσlt, hσ0, huniq, hord, a, ds σ / a, ha, hb,
-    ratio_tendsto hpA hzA ha, rfl, hratio, hval, ?_, ?_⟩
-  · rw [hval]; exact (crossing_value_ne_iff hτR ha).mpr fun h => hratio (by rw [h, div_self ha])
-  · exact jordan_torsion_eq_neg_ratio (ds σ) a hb hab
-
-/-- FRIED FAILS AT THE CROSSING, from the CLUSTER inputs: `hrate_nonclosed` is REPLACED by
-(i) C¹ cluster data (a, b, a', b' continuous at (0,0)), (ii) a(0,0) = r₀ > 0, (iii) b(0,0)
-= 0, and the branch's start s*(θ) with s*(0) = 0, continuous at 0, negative for θ ≠ 0.
-Conclusion: there are θ₀, δ > 0 such that for EVERY θ with 0 < |θ| < θ₀ and every zeta-side
-data (z, R, cluster dimensions) satisfying the remaining ledger hypotheses, the twin branch
-`twin sStar a b θ` crosses 0 once in |τ| < δ and Fried fails there with the Lemma A value. -/
-theorem fried_fails_at_crossing_of_cluster_inputs
-    {K : Type*} [Field K] {V₁ V₂ V₃ : Type*}
-    [AddCommGroup V₁] [Module K V₁] [FiniteDimensional K V₁]
-    [AddCommGroup V₂] [Module K V₂] [FiniteDimensional K V₂]
-    [AddCommGroup V₃] [Module K V₃]
-    (sStar : ℝ → ℝ) (a b a' b' : ℝ → ℝ → ℝ) {r₀ : ℝ} (hr₀ : 0 < r₀)
-    (hderiv_a : ∀ θ τ, HasDerivAt (a θ) (a' θ τ) τ)
-    (hderiv_b : ∀ θ τ, HasDerivAt (b θ) (b' θ τ) τ)
-    (hcont_a : ContinuousAt (Function.uncurry a) (0, 0))
-    (hcont_b : ContinuousAt (Function.uncurry b) (0, 0))
-    (hcont_a' : ContinuousAt (Function.uncurry a') (0, 0))
-    (hcont_b' : ContinuousAt (Function.uncurry b') (0, 0))
-    (ha0 : a 0 0 = r₀) (hb0 : b 0 0 = 0)
-    (hsStar0 : sStar 0 = 0) (hsStarc : ContinuousAt sStar 0)
-    (hsStarneg : ∀ θ, θ ≠ 0 → sStar θ < 0) :
-    ∃ θ₀ δ : ℝ, 0 < θ₀ ∧ 0 < δ ∧ ∀ θ, θ ≠ 0 → |θ| < θ₀ →
-      ∀ (z R : ℝ → ℝ) (c : Fin 5 → ℕ) (τR : ℝ),
-        τR ≠ 0 →
-        (∀ τ₀, twin sStar a b θ τ₀ = 0 → ∃ (α : ℝ) (e : ℝ → ℝ), α ≠ 0 ∧
-          α ≠ dtwin (a θ τ₀) (b θ τ₀) (a' θ τ₀) (b' θ τ₀) τ₀ ∧
-          (∀ τ, z τ = α * (τ - τ₀) * (1 + e τ)) ∧ Tendsto e (𝓝[≠] τ₀) (𝓝 0)) →
-        (∀ τ₀, twin sStar a b θ τ₀ = 0 → ContinuousAt R τ₀) →
-        (∀ τ, |τ| < δ → twin sStar a b θ τ ≠ 0 → R τ * z τ / twin sStar a b θ τ = τR) →
-        (∃ (f : V₁ →ₗ[K] V₂) (g : V₂ →ₗ[K] V₃), Function.Injective f ∧
-          LinearMap.range f = LinearMap.ker g ∧ Function.Surjective g) →
-        (c 0 = 0 ∧ c 4 = 0) → c 3 = c 1 →
-        (c 1 = Module.finrank K V₁ ∧ c 2 = Module.finrank K V₂ ∧
-          c 3 = Module.finrank K V₃) →
-        ∃ σ, 0 < σ ∧ σ ≤ 2 * |sStar θ| / r₀ ∧ σ < δ ∧ twin sStar a b θ σ = 0 ∧
-          (∀ τ, |τ| < δ → twin sStar a b θ τ = 0 → τ = σ) ∧
-          zetaOrder c = 0 ∧
-          ∃ α ratio : ℝ, α ≠ 0 ∧ dtwin (a θ σ) (b θ σ) (a' θ σ) (b' θ σ) σ ≠ 0 ∧
-            Tendsto (fun τ => twin sStar a b θ τ / z τ) (𝓝[≠] σ) (𝓝 ratio) ∧
-            ratio = dtwin (a θ σ) (b θ σ) (a' θ σ) (b' θ σ) σ / α ∧ ratio ≠ 1 ∧
-            R σ = τR * ratio ∧ R σ ≠ τR ∧
-            refinedTorsion 1 (dtwin (a θ σ) (b θ σ) (a' θ σ) (b' θ σ) σ /
-              (α - dtwin (a θ σ) (b θ σ) (a' θ σ) (b' θ σ) σ)) =
-              -(α / dtwin (a θ σ) (b θ σ) (a' θ σ) (b' θ σ) σ) := by
-  obtain ⟨ε, hε, hrate⟩ := twin_rate_of_cluster sStar a b a' b' hr₀ hderiv_a hderiv_b
-    hcont_a hcont_b hcont_a' hcont_b' ha0 hb0
-  -- s*(θ) small for θ small: |s*(θ)| < (r₀/2)·ε
-  have hr2 : 0 < r₀ / 2 * ε := by positivity
-  obtain ⟨θ₁, hθ₁, hsmall⟩ := Metric.continuousAt_iff.mp hsStarc (r₀ / 2 * ε) hr2
-  refine ⟨min ε θ₁, ε, lt_min hε hθ₁, hε, fun θ hθne hθ z R c τR hτR hrate_zero hcont
-    hfried_off hexact hacyc hdual hdims => ?_⟩
-  have hθε : |θ| < ε := lt_of_lt_of_le hθ (min_le_left _ _)
-  have hθ₁' : |θ| < θ₁ := lt_of_lt_of_le hθ (min_le_right _ _)
-  have hs0 : twin sStar a b θ 0 < 0 := by rw [twin_zero]; exact hsStarneg θ hθne
-  have hsmall' : |twin sStar a b θ 0| < r₀ / 2 * ε := by
-    rw [twin_zero]
-    have := hsmall (by rw [Real.dist_eq, sub_zero]; exact hθ₁')
-    rw [Real.dist_eq, hsStar0, sub_zero] at this
-    exact this
-  obtain ⟨σ, hσpos, hσle, hσlt, hσ0, huniq, hord, α, ratio, hα, hb, hlim, hratio_eq,
-      hratio, hval, hne, htors⟩ :=
-    fried_fails_at_crossing_local (K := K) (V₁ := V₁) (V₂ := V₂) (V₃ := V₃)
-      (twin sStar a b θ) (fun τ => dtwin (a θ τ) (b θ τ) (a' θ τ) (b' θ τ) τ) z R c
-      (r₀ / 2) ε τR hτR (by positivity) hs0 hsmall'
-      (fun τ hτ => ⟨(hrate θ τ hθε hτ).2.1, (hrate θ τ hθε hτ).2.2.1⟩)
-      hrate_zero hcont hfried_off hexact hacyc hdual hdims
-  refine ⟨σ, hσpos, ?_, hσlt, hσ0, huniq, hord, α, ratio, hα, hb, hlim, hratio_eq, hratio,
-    hval, hne, htors⟩
-  rw [twin_zero] at hσle
-  calc σ ≤ |sStar θ| / (r₀ / 2) := hσle
-    _ = 2 * |sStar θ| / r₀ := by rw [div_div_eq_mul_div]; ring
 
 end Capstone
 

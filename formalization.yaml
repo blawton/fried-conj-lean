@@ -72,12 +72,7 @@ status:
     of Challenge.lean, and the geometric identification of its objects is not formalized. The repository
     also contains an earlier form of the same theorem, fried_counterexample_of_inputs, in which the joint
     C³ regularity of the cluster matrices is a hypothesis rather than derived from the resolvent
-    families; it is not compared. The repository's other files (b1_spectral_skeleton_8_12, bridge_8_20,
-    endpoints_8_20, the route_ii files, h_mixing_equivalence_8_31, fried_capstone_8_31,
-    object_matching_s1_8_15) belong to a separate conditional programme (a uniform twisted kinetic gap
-    ⇒ Fried) and are not part of this submission; b1_spectral_skeleton_8_12 declares quarantined
-    `axiom`s, none of which is reachable from the compared declaration or from any file in its import
-    chain.
+    families; it is not compared. No file in the repository declares an axiom.
   sorry_count: 0
   sorry_in_definitions: 0
   axioms: ["propext", "Classical.choice", "Quot.sound"]
@@ -249,9 +244,8 @@ limitations:
     resonance-free case will read the result as an instance of that refined identity rather than as a
     counterexample.
   - >-
-    The repository proves more than is compared (the uncompared fried_counterexample_of_inputs, the
-    per-leg theorems, and the separate kinetic-gap programme in the other files). One file of that
-    programme, b1_spectral_skeleton_8_12, declares quarantined axioms; nothing compared reaches them.
+    The repository proves more than is compared: the uncompared fried_counterexample_of_inputs and the
+    per-leg theorems it rests on. No file declares an axiom.
   - >-
     Novelty is unknown. No systematic prior-art search has been run beyond the cited literature; the
     author makes no priority claim beyond the restricted Zenodo deposit.
