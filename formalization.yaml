@@ -6,11 +6,11 @@ version: "v0.4"
 project:
   name: "Resonance-cluster analysis for a proposed counterexample to Fried's conjecture"
   description: >-
-    A Lean 4 / Mathlib formalization of ONE theorem,
-    FriedCrossing.fried_counterexample_of_resolvent_inputs, the machine-checked reduction behind a
+    A Lean 4 formalization of the theorem FriedCrossing.fried_counterexample_of_resolvent_inputs, the machine-checked reduction behind a
     proposed codimension-one failure of Fried's identity ζ(0) = τ_R for acyclic characters on a closed
-    hyperbolic 3-manifold with b₁ = 1.
-    THE MECHANISM. Near (g_hyp, ρ_triv), along the conformal family g_τ = e^{−2τb}g_hyp with characters
+    hyperbolic 3-manifold with b₁ = 1. For a simple illustration of the method with figures, see docs/counterexample_intuitive_view.pdf.
+    
+    The Mechanism: Near (g_hyp, ρ_triv), along the conformal family g_τ = e^{−2τb}g_hyp with characters
     χ_θ, the Ruelle resonances near 0 form two small clusters: a rank-2 cluster in degree 1, encoded by
     a 2×2 matrix M(θ,τ), and a rank-4 cluster in degree 2, encoded by a 4×4 matrix A(θ,τ). A branch is
     one eigenvalue of a cluster matrix followed continuously in (θ,τ). Degree 1 has the closed branch
@@ -21,7 +21,8 @@ project:
     regular at 0 and ζ(0; g_σ) = τ_R · (rate of the twin)/(rate of z). The twin's rate is at most 2r₀
     and z's exceeds 2r₀, so ζ(0; g_σ) ≠ τ_R. Fried's identity would need the two branches to arrive at
     the same speed. The whole Lean argument is bookkeeping of these four branches.
-    WHAT IS PROVED. The theorem is a conditional reduction. Its objects are two abstract resolvent
+    
+    What is Proved: The theorem is a conditional reduction. Its objects are two abstract resolvent
     families on Banach scales (structure fields = the cited facts: local uniform boundedness and
     two-sided inversion of the generator modulo inclusions, CDDP Lemma 4.3; smooth generator), complex
     structures, and nondegenerate frames; the cluster matrices M, A are DEFINED from them as real parts
@@ -40,7 +41,8 @@ project:
     θ₀, δ > 0 such that for 0 < |θ| < θ₀ the twin crosses 0 at exactly one σ ∈ (0, 2|s*|/r₀], the ζ-order
     at 0 is zero, the zero branch has slope ∂_τe₂/e₁ of modulus > 2r₀, |e₁(θ,σ)| ≤ K₁|θ|σ, and
     ζ₀(σ) = τ_R · (pole rate)/(zero rate) ≠ τ_R, with the torsion identity of the zero cluster.
-    WHAT IS NOT PROVED. The identification of the abstract data with the geometry — that the resolvent
+    
+    Dependencies: The identification of the abstract data with the geometry — that the resolvent
     families are those of the twisted deformed generator L_X + iθω(X) on the anisotropic spaces of g_τ,
     that ζ₀(τ) is the Ruelle zeta function of g_τ at 0, that τ_R is the Reidemeister torsion of χ_θ,
     and that the defined matrices are the cluster matrices (their imaginary parts vanish) — is the
