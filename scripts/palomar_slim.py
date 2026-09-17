@@ -1,4 +1,76 @@
-# Resonance-cluster analysis for a proposed counterexample to Fried's conjecture
+#!/usr/bin/env python3
+"""Slim the repository to the Palomar entry (9/16).
+
+Removes the earlier H ⇒ Fried programme (ten Lean files + archive/), rewrites the root import list,
+replaces README.md with the public-facing document, and trims the scope paragraph of formalization.yaml.
+Idempotent: safe to rerun. Run from the repository root:
+
+    python3 scripts/palomar_slim.py
+    python3 scripts/make_challenge.py --check && python3 scripts/ledger_check.py
+    lake build            # optional here; Palomar's CI builds Challenge and Solution itself
+"""
+import pathlib, shutil, sys
+
+ROOT = pathlib.Path(__file__).resolve().parent.parent
+B1S = ROOT / "B1s"
+
+PROGRAMME_FILES = [
+    "b1_spectral_skeleton_8_12", "object_matching_s1_8_15", "bridge_8_20", "endpoints_8_20",
+    "route_ii_attainment_8_28", "route_ii_resolvent_8_28", "route_ii_correlation_8_28",
+    "h_mixing_equivalence_8_31", "fried_capstone_8_31",
+]
+CROSSING_FILES = [
+    "fried_statement_defs_9_14", "fried_crossing_9_03", "fried_crossing_rate_9_07",
+    "fried_crossing_firstvariation_9_08", "fried_crossing_purezeros_9_08", "fried_cluster_matrices_9_10",
+    "resolvent_scale_9_11", "cluster_from_resolvent_9_11", "fried_counterexample_main",
+]
+
+def remove_programme():
+    for f in PROGRAMME_FILES:
+        p = B1S / f"{f}.lean"
+        if p.exists():
+            p.unlink(); print("removed", p.relative_to(ROOT))
+    arch = ROOT / "archive"
+    if arch.exists():
+        shutil.rmtree(arch); print("removed archive/")
+    for stale in ["README.md.bak_9_10", "scripts/audit_9_10.lean"]:
+        p = ROOT / stale
+        if p.exists():
+            p.unlink(); print("removed", stale)
+
+def write_root_imports():
+    lines = ["import B1s.Basic"] + [f"import B1s.{f}" for f in CROSSING_FILES]
+    (ROOT / "B1s.lean").write_text("\n".join(lines) + "\n"); print("wrote B1s.lean")
+
+def trim_yaml_scope():
+    p = ROOT / "formalization.yaml"; s = p.read_text()
+    old = """ The repository
+    also contains an earlier form of the same theorem, fried_counterexample_of_inputs, in which the joint
+    C³ regularity of the cluster matrices is a hypothesis rather than derived from the resolvent
+    families; it is not compared. The repository's other files (b1_spectral_skeleton_8_12, bridge_8_20,
+    endpoints_8_20, the route_ii files, h_mixing_equivalence_8_31, fried_capstone_8_31,
+    object_matching_s1_8_15) belong to a separate conditional programme (a uniform twisted kinetic gap
+    ⇒ Fried) and are not part of this submission; b1_spectral_skeleton_8_12 declares quarantined
+    `axiom`s, none of which is reachable from the compared declaration or from any file in its import
+    chain."""
+    new = """ The repository
+    also contains an earlier form of the same theorem, fried_counterexample_of_inputs, in which the joint
+    C³ regularity of the cluster matrices is a hypothesis rather than derived from the resolvent
+    families; it is not compared. No file in the repository declares an axiom."""
+    if old in s:
+        s = s.replace(old, new)
+    old2 = """  - >-
+    The repository proves more than is compared (the uncompared fried_counterexample_of_inputs, the
+    per-leg theorems, and the separate kinetic-gap programme in the other files). One file of that
+    programme, b1_spectral_skeleton_8_12, declares quarantined axioms; nothing compared reaches them."""
+    new2 = """  - >-
+    The repository proves more than is compared: the uncompared fried_counterexample_of_inputs and the
+    per-leg theorems it rests on. No file declares an axiom."""
+    if old2 in s:
+        s = s.replace(old2, new2)
+    p.write_text(s); print("trimmed formalization.yaml scope")
+
+README = r'''# Resonance-cluster analysis for a proposed counterexample to Fried's conjecture
 
 Lean 4 / Mathlib formalization of one theorem, `FriedCrossing.fried_counterexample_of_resolvent_inputs`:
 the machine-checked reduction behind a proposed codimension-one failure of Fried's identity
@@ -152,3 +224,11 @@ theorem equals the set of rows.
 ## License
 
 Apache-2.0, see `LICENSE`.
+'''
+
+def write_readme():
+    (ROOT / "README.md").write_text(README); print("wrote README.md")
+
+if __name__ == "__main__":
+    remove_programme(); write_root_imports(); trim_yaml_scope(); write_readme()
+    print("done — now: python3 scripts/make_challenge.py --check && python3 scripts/ledger_check.py")

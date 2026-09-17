@@ -25,6 +25,8 @@ so `TwinRate.cluster_roots` applies to the ACTUAL cluster matrix. a, b are joint
 at (0,0) with a(0,0) = tr ∂_τM(0,0), b(0,0) = det ∂_τM(0,0), i.e. the numbers of §1.
 
 §3 Capstone wrapper — `fried_fails_at_crossing_of_cddp_inputs`: the cluster capstone with
+[9/16: the §3 capstone `fried_fails_at_crossing_of_cddp_inputs` was REMOVED for the Palomar entry as superseded;
+§1–§2 remain and are used by `fried_counterexample_of_resolvent_inputs`.]
 `ha0`, `hb0` REPLACED by "∂_τM(0,0) is the (4.22) matrix" (B, p as in §1, orientation
 B_cc·p/det B > 0). What remains hypothesis-shaped about regularity: a, b differentiable in τ
 with derivatives jointly continuous at (0,0) (one more derivative of M than §2 proves).
@@ -252,82 +254,6 @@ end Hadamard
 namespace Capstone
 
 open TwinRate FirstVariation Hadamard OrderCount TorsionCore
-
-/-- FRIED FAILS AT THE CROSSING, with `ha0`/`hb0` replaced by CDDP (4.22): the first-variation
-matrix ∂_τM(0,0) in the pairing B has vanishing c-row/column, so its trace/determinant are
-those of `Nmat` — a(0,0) = B_cc·p/det B =: r₀ (oriented positive), b(0,0) = 0. The cluster
-data a, b are tr/det of the τ-divided matrix `Ndiv` (Hadamard §2), whose joint continuity at
-(0,0) is PROVED from that of ∂_τM; their τ-differentiability with jointly continuous
-derivatives remains the one regularity hypothesis (`hderiv_a`, `hderiv_b`, `hcont_a'`,
-`hcont_b'`). -/
-theorem fried_fails_at_crossing_of_cddp_inputs
-    {K : Type*} [Field K] {V₁ V₂ V₃ : Type*}
-    [AddCommGroup V₁] [Module K V₁] [FiniteDimensional K V₁]
-    [AddCommGroup V₂] [Module K V₂] [FiniteDimensional K V₂]
-    [AddCommGroup V₃] [Module K V₃]
-    (M M' : ℝ → ℝ → Matrix (Fin 2) (Fin 2) ℝ) (sStar : ℝ → ℝ)
-    (Bcc Bcψ Bψc Bψψ p : ℝ)
-    -- hdouble (Saturation): the cluster at g_hyp is the scalar s*(θ)
-    (h0 : ∀ θ, M θ 0 = sStar θ • (1 : Matrix (Fin 2) (Fin 2) ℝ))
-    -- input (B), rank-2 half: entrywise C¹ in τ, ∂_τM jointly continuous at (0,0)
-    (hderiv : ∀ θ τ i j, HasDerivAt (fun t => M θ t i j) (M' θ τ i j) τ)
-    (hM' : ∀ i j, ContinuousAt (fun p : ℝ × ℝ => M' p.1 p.2 i j) (0, 0))
-    -- CDDP (4.22) + (1.3) + Lemma 2.10: ∂_τM(0,0) is the pairing-relative (4.22) matrix
-    (hdet : Bcc * Bψψ - Bcψ * Bψc ≠ 0)
-    (h422 : Bmat Bcc Bcψ Bψc Bψψ * M' 0 0 = Pmat p)
-    (hr₀ : 0 < Bcc * p / (Bcc * Bψψ - Bcψ * Bψc))
-    -- residual regularity of a = tr N, b = det N (one derivative beyond §2)
-    (a' b' : ℝ → ℝ → ℝ)
-    (hderiv_a : ∀ θ τ, HasDerivAt (fun τ => (Ndiv M M' sStar θ τ).trace) (a' θ τ) τ)
-    (hderiv_b : ∀ θ τ, HasDerivAt (fun τ => (Ndiv M M' sStar θ τ).det) (b' θ τ) τ)
-    (hcont_a' : ContinuousAt (Function.uncurry a') (0, 0))
-    (hcont_b' : ContinuousAt (Function.uncurry b') (0, 0))
-    -- the branch's start
-    (hsStar0 : sStar 0 = 0) (hsStarc : ContinuousAt sStar 0)
-    (hsStarneg : ∀ θ, θ ≠ 0 → sStar θ < 0) :
-    let a : ℝ → ℝ → ℝ := fun θ τ => (Ndiv M M' sStar θ τ).trace
-    let b : ℝ → ℝ → ℝ := fun θ τ => (Ndiv M M' sStar θ τ).det
-    let r₀ : ℝ := Bcc * p / (Bcc * Bψψ - Bcψ * Bψc)
-    ∃ θ₀ δ : ℝ, 0 < θ₀ ∧ 0 < δ ∧ ∀ θ, θ ≠ 0 → |θ| < θ₀ →
-      ∀ (z R : ℝ → ℝ) (c : Fin 5 → ℕ) (τR : ℝ),
-        τR ≠ 0 →
-        (∀ τ₀, twin sStar a b θ τ₀ = 0 → ∃ (α : ℝ) (e : ℝ → ℝ), α ≠ 0 ∧
-          α ≠ dtwin (a θ τ₀) (b θ τ₀) (a' θ τ₀) (b' θ τ₀) τ₀ ∧
-          (∀ τ, z τ = α * (τ - τ₀) * (1 + e τ)) ∧ Tendsto e (𝓝[≠] τ₀) (𝓝 0)) →
-        (∀ τ₀, twin sStar a b θ τ₀ = 0 → ContinuousAt R τ₀) →
-        (∀ τ, |τ| < δ → twin sStar a b θ τ ≠ 0 → R τ * z τ / twin sStar a b θ τ = τR) →
-        (∃ (f : V₁ →ₗ[K] V₂) (g : V₂ →ₗ[K] V₃), Function.Injective f ∧
-          LinearMap.range f = LinearMap.ker g ∧ Function.Surjective g) →
-        (c 0 = 0 ∧ c 4 = 0) → c 3 = c 1 →
-        (c 1 = Module.finrank K V₁ ∧ c 2 = Module.finrank K V₂ ∧
-          c 3 = Module.finrank K V₃) →
-        ∃ σ, 0 < σ ∧ σ ≤ 2 * |sStar θ| / r₀ ∧ σ < δ ∧ twin sStar a b θ σ = 0 ∧
-          (∀ τ, |τ| < δ → twin sStar a b θ τ = 0 → τ = σ) ∧
-          zetaOrder c = 0 ∧
-          ∃ α ratio : ℝ, α ≠ 0 ∧ dtwin (a θ σ) (b θ σ) (a' θ σ) (b' θ σ) σ ≠ 0 ∧
-            Tendsto (fun τ => twin sStar a b θ τ / z τ) (𝓝[≠] σ) (𝓝 ratio) ∧
-            ratio = dtwin (a θ σ) (b θ σ) (a' θ σ) (b' θ σ) σ / α ∧ ratio ≠ 1 ∧
-            R σ = τR * ratio ∧ R σ ≠ τR ∧
-            refinedTorsion 1 (dtwin (a θ σ) (b θ σ) (a' θ σ) (b' θ σ) σ /
-              (α - dtwin (a θ σ) (b θ σ) (a' θ σ) (b' θ σ) σ)) =
-              -(α / dtwin (a θ σ) (b θ σ) (a' θ σ) (b' θ σ) σ) := by
-  intro a b r₀
-  -- (4.22) pins ∂_τM(0,0) = Nmat, hence a(0,0) = r₀, b(0,0) = 0
-  have hM00 : M' 0 0 = Nmat Bcc Bcψ Bψc Bψψ p := Nmat_unique hdet _ h422
-  have ha0 : a 0 0 = r₀ := by
-    change (Ndiv M M' sStar 0 0).trace = _
-    rw [Ndiv_zero, hM00, trace_Nmat]
-  have hb0 : b 0 0 = 0 := by
-    change (Ndiv M M' sStar 0 0).det = 0
-    rw [Ndiv_zero, hM00, det_Nmat]
-  -- joint continuity of a, b at (0,0): the Hadamard step
-  have hcont_a : ContinuousAt (Function.uncurry a) (0, 0) :=
-    continuousAt_trace_Ndiv M M' sStar h0 hderiv hM'
-  have hcont_b : ContinuousAt (Function.uncurry b) (0, 0) :=
-    continuousAt_det_Ndiv M M' sStar h0 hderiv hM'
-  exact fried_fails_at_crossing_of_cluster_inputs (K := K) (V₁ := V₁) (V₂ := V₂) (V₃ := V₃)
-    sStar a b a' b' hr₀ hderiv_a hderiv_b hcont_a hcont_b hcont_a' hcont_b' ha0 hb0
-    hsStar0 hsStarc hsStarneg
 
 end Capstone
 

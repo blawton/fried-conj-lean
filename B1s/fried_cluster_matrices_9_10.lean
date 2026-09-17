@@ -798,6 +798,7 @@ open TwinRate Hadamard FirstVariation Derived Spectral ClusterMatrix Ledger Orde
 
 /-- FRIED FAILS AT THE CROSSING — THE MATRICES AS PRIMITIVES. Compared with
 `fried_fails_at_crossing_of_pure_zero_inputs`: the four regularity bundles are replaced by
+[the former capstone `fried_fails_at_crossing_of_pure_zero_inputs` was removed 9/16 as superseded]
 `ClusterC3` (joint C³ of the two cluster matrices); mirror and pinning are stated as spectra of the
 degree-2 matrix; the locked branches enter as `hlocked` (degree-1 eigenvalues recur in degree 2);
 `hexactZero` and `hgeneric` are DERIVED from exactness through the dictionary `hriesz`

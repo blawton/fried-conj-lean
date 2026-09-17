@@ -1,4 +1,6 @@
 /-
+[9/16: the capstones `fried_fails_at_crossing_local'` and `fried_fails_at_crossing_of_pure_zero_inputs` were REMOVED
+for the Palomar entry as superseded; the `_ord` forms and §1–§4 remain and are used.]
 THE PURE DEGREE-2 ZEROS FROM THE RANK-4 CLUSTER — hrate_zero derived (9/08).
 
 Companion to `fried_crossing_rate_9_07` / `fried_crossing_firstvariation_9_08` (same leg). The
@@ -423,36 +425,6 @@ theorem fried_fails_at_crossing_local_ord
   · rw [hval]; exact (crossing_value_ne_iff hτR ha).mpr fun h => hratio (by rw [h, div_self ha])
   · exact jordan_torsion_eq_neg_ratio (ds σ) a hb hab
 
-/-- `fried_fails_at_crossing_local` with the zero's arrival given as `LinearArrival`, and only
-required at crossings inside |τ| < δ. -/
-theorem fried_fails_at_crossing_local'
-    {K : Type*} [Field K] {V₁ V₂ V₃ : Type*}
-    [AddCommGroup V₁] [Module K V₁] [FiniteDimensional K V₁]
-    [AddCommGroup V₂] [Module K V₂] [FiniteDimensional K V₂]
-    [AddCommGroup V₃] [Module K V₃]
-    (s ds z R : ℝ → ℝ) (c : Fin 5 → ℕ) (r δ τR : ℝ)
-    (hτR : τR ≠ 0) (hr : 0 < r)
-    (hs0 : s 0 < 0) (hsmall : |s 0| < r * δ)
-    (hrate : ∀ τ, |τ| < δ → HasDerivAt s (ds τ) τ ∧ r ≤ ds τ)
-    (hzero : ∀ τ₀, |τ₀| < δ → s τ₀ = 0 → ∃ a : ℝ, a ≠ 0 ∧ a ≠ ds τ₀ ∧ LinearArrival z a τ₀)
-    (hcont : ∀ τ₀, s τ₀ = 0 → ContinuousAt R τ₀)
-    (hfried_off : ∀ τ, |τ| < δ → s τ ≠ 0 → R τ * z τ / s τ = τR)
-    (hexact : ∃ (f : V₁ →ₗ[K] V₂) (g : V₂ →ₗ[K] V₃), Function.Injective f ∧
-      LinearMap.range f = LinearMap.ker g ∧ Function.Surjective g)
-    (hacyc : c 0 = 0 ∧ c 4 = 0) (hdual : c 3 = c 1)
-    (hdims : c 1 = Module.finrank K V₁ ∧ c 2 = Module.finrank K V₂ ∧
-      c 3 = Module.finrank K V₃) :
-    ∃ σ, 0 < σ ∧ σ ≤ |s 0| / r ∧ σ < δ ∧ s σ = 0 ∧ (∀ τ, |τ| < δ → s τ = 0 → τ = σ) ∧
-      zetaOrder c = 0 ∧
-      ∃ a ratio : ℝ, a ≠ 0 ∧ ds σ ≠ 0 ∧
-        Tendsto (fun τ => s τ / z τ) (𝓝[≠] σ) (𝓝 ratio) ∧
-        ratio = ds σ / a ∧ ratio ≠ 1 ∧ R σ = τR * ratio ∧ R σ ≠ τR ∧
-        refinedTorsion 1 (ds σ / (a - ds σ)) = -(a / ds σ) := by
-  refine fried_fails_at_crossing_local_ord s ds z R c r δ τR hτR hr hs0 hsmall hrate hzero hcont
-    hfried_off fun _ _ _ => ?_
-  obtain ⟨f, g, hf, hfg, hg⟩ := hexact
-  exact order_zero_of_exact f g hf hfg hg c hacyc hdual hdims
-
 /-- FRIED FAILS AT THE CROSSING — `hrate_zero` DERIVED. The pure degree-2 zero data enter only as:
 the symmetric functions e₁, e₂ of the two pure branches with their joint regularity at (0,0)
 (bounded ∂_θ∂_τe₁; bounded ∂_θ∂²_τe₂) [rank-4 half of input (B)], the boundary values e₁(θ,0) = 0,
@@ -581,78 +553,6 @@ theorem fried_fails_at_crossing_of_pure_zero_inputs_ord
   subst hσσ'
   exact ⟨σ', hσ'pos, hσle', hσ'lt, hσ'0, huniq', hord, hzderiv, hbig, hi, α, ratio, hα, hb, hlim,
     hratio_eq, hratio, hval, hne, htors⟩
-
-
-/-- FRIED FAILS AT THE CROSSING — `hrate_zero` DERIVED. The pure degree-2 zero data enter only as:
-the symmetric functions e₁, e₂ of the two pure branches with their joint regularity at (0,0)
-(bounded ∂_θ∂_τe₁; bounded ∂_θ∂²_τe₂) [rank-4 half of input (B)], the boundary values e₁(θ,0) = 0,
-e₂(θ,0) = −s*² [mirror, A], e₁(0,τ) = e₂(0,τ) = 0 [pinning, D], and at each crossing: e₂ = 0
-[exactness, E], e₁ ≠ 0 [generic case], and z a continuous root of z² − e₁z + e₂ through 0 [the
-pure-zero branch]. Everything else is the cluster capstone's ledger. Conclusion adds: the zero's
-slope at the crossing is ∂_τe₂/e₁ and exceeds 2r₀ in absolute value (steeper than the pole). -/
-theorem fried_fails_at_crossing_of_pure_zero_inputs
-    {K : Type*} [Field K] {V₁ V₂ V₃ : Type*}
-    [AddCommGroup V₁] [Module K V₁] [FiniteDimensional K V₁]
-    [AddCommGroup V₂] [Module K V₂] [FiniteDimensional K V₂]
-    [AddCommGroup V₃] [Module K V₃]
-    -- the twin (rate file)
-    (sStar : ℝ → ℝ) (a b a' b' : ℝ → ℝ → ℝ) {r₀ : ℝ} (hr₀ : 0 < r₀)
-    (hderiv_a : ∀ θ τ, HasDerivAt (a θ) (a' θ τ) τ)
-    (hderiv_b : ∀ θ τ, HasDerivAt (b θ) (b' θ τ) τ)
-    (hcont_a : ContinuousAt (Function.uncurry a) (0, 0))
-    (hcont_b : ContinuousAt (Function.uncurry b) (0, 0))
-    (hcont_a' : ContinuousAt (Function.uncurry a') (0, 0))
-    (hcont_b' : ContinuousAt (Function.uncurry b') (0, 0))
-    (ha0 : a 0 0 = r₀) (hb0 : b 0 0 = 0)
-    (hsStar0 : sStar 0 = 0) (hsStarc : ContinuousAt sStar 0)
-    (hsStarneg : ∀ θ, θ ≠ 0 → sStar θ < 0)
-    -- the pure degree-2 pair (this file)
-    (e₁ e₂ e₁τ e₁θτ e₂τ e₂ττ e₂θττ : ℝ → ℝ → ℝ) {K₁ K₂ ε : ℝ}
-    (hK₁ : 0 < K₁) (hK₂ : 0 < K₂) (hε : 0 < ε)
-    (hd₁ : ∀ θ τ, HasDerivAt (e₁ θ) (e₁τ θ τ) τ)
-    (hd₁' : ∀ θ τ, HasDerivAt (fun θ => e₁τ θ τ) (e₁θτ θ τ) θ)
-    (hB₁ : ∀ θ τ, |θ| < ε → |τ| < ε → |e₁θτ θ τ| ≤ K₁)
-    (hd₂ : ∀ θ τ, HasDerivAt (e₂ θ) (e₂τ θ τ) τ)
-    (hd₂' : ∀ θ τ, HasDerivAt (e₂τ θ) (e₂ττ θ τ) τ)
-    (hd₂'' : ∀ θ τ, HasDerivAt (fun θ => e₂ττ θ τ) (e₂θττ θ τ) θ)
-    (hB₂ : ∀ θ τ, |θ| < ε → |τ| < ε → |e₂θττ θ τ| ≤ K₂)
-    (h₁τ0 : ∀ θ, e₁ θ 0 = 0) (h₁θ0 : ∀ τ, e₁ 0 τ = 0)
-    (h₂τ0 : ∀ θ, e₂ θ 0 = -(sStar θ) ^ 2) (h₂θ0 : ∀ τ, e₂ 0 τ = 0) :
-    ∃ θ₀ δ : ℝ, 0 < θ₀ ∧ 0 < δ ∧ θ₀ ≤ ε ∧ δ ≤ ε ∧ ∀ θ, θ ≠ 0 → |θ| < θ₀ →
-      ∀ (z R : ℝ → ℝ) (c : Fin 5 → ℕ) (τR : ℝ),
-        τR ≠ 0 →
-        (∀ τ, 0 ≤ disc (e₁ θ τ) (e₂ θ τ) → z τ ^ 2 - e₁ θ τ * z τ + e₂ θ τ = 0) →
-        (∀ τ₀, |τ₀| < δ → twin sStar a b θ τ₀ = 0 →
-          ContinuousAt z τ₀ ∧ z τ₀ = 0 ∧ e₂ θ τ₀ = 0 ∧ e₁ θ τ₀ ≠ 0) →
-        (∀ τ₀, twin sStar a b θ τ₀ = 0 → ContinuousAt R τ₀) →
-        (∀ τ, |τ| < δ → twin sStar a b θ τ ≠ 0 → R τ * z τ / twin sStar a b θ τ = τR) →
-        (∃ (f : V₁ →ₗ[K] V₂) (g : V₂ →ₗ[K] V₃), Function.Injective f ∧
-          LinearMap.range f = LinearMap.ker g ∧ Function.Surjective g) →
-        (c 0 = 0 ∧ c 4 = 0) → c 3 = c 1 →
-        (c 1 = Module.finrank K V₁ ∧ c 2 = Module.finrank K V₂ ∧
-          c 3 = Module.finrank K V₃) →
-        ∃ σ, 0 < σ ∧ σ ≤ 2 * |sStar θ| / r₀ ∧ σ < δ ∧ twin sStar a b θ σ = 0 ∧
-          (∀ τ, |τ| < δ → twin sStar a b θ τ = 0 → τ = σ) ∧
-          zetaOrder c = 0 ∧
-          -- the zero's slope: ∂_τe₂/e₁, steeper than the pole
-          HasDerivAt z (e₂τ θ σ / e₁ θ σ) σ ∧ 2 * r₀ < |e₂τ θ σ / e₁ θ σ| ∧
-          |e₁ θ σ| ≤ K₁ * |θ| * σ ∧
-          ∃ α ratio : ℝ, α ≠ 0 ∧ dtwin (a θ σ) (b θ σ) (a' θ σ) (b' θ σ) σ ≠ 0 ∧
-            Tendsto (fun τ => twin sStar a b θ τ / z τ) (𝓝[≠] σ) (𝓝 ratio) ∧
-            ratio = dtwin (a θ σ) (b θ σ) (a' θ σ) (b' θ σ) σ / α ∧ ratio ≠ 1 ∧
-            R σ = τR * ratio ∧ R σ ≠ τR ∧
-            refinedTorsion 1 (dtwin (a θ σ) (b θ σ) (a' θ σ) (b' θ σ) σ /
-              (α - dtwin (a θ σ) (b θ σ) (a' θ σ) (b' θ σ) σ)) =
-              -(α / dtwin (a θ σ) (b θ σ) (a' θ σ) (b' θ σ) σ) := by
-  obtain ⟨θ₀, δ, hθ₀, hδ, hθ₀ε, hδε, H⟩ :=
-    fried_fails_at_crossing_of_pure_zero_inputs_ord sStar a b a' b' hr₀ hderiv_a hderiv_b hcont_a
-      hcont_b hcont_a' hcont_b' ha0 hb0 hsStar0 hsStarc hsStarneg e₁ e₂ e₁τ e₁θτ e₂τ e₂ττ e₂θττ hK₁
-      hK₂ hε hd₁ hd₁' hB₁ hd₂ hd₂' hd₂'' hB₂ h₁τ0 h₁θ0 h₂τ0 h₂θ0
-  refine ⟨θ₀, δ, hθ₀, hδ, hθ₀ε, hδε,
-    fun θ hθne hθ z R c τR hτR hzQ hzc hcont hfried_off hexact hacyc hdual hdims => ?_⟩
-  refine H θ hθne hθ z R c τR hτR hzQ hzc hcont hfried_off fun _ _ _ => ?_
-  obtain ⟨f, g, hf, hfg, hg⟩ := hexact
-  exact order_zero_of_exact f g hf hfg hg c hacyc hdual hdims
 
 end Capstone
 
